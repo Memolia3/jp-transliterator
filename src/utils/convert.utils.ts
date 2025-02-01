@@ -1,5 +1,5 @@
 /**
- * シンプルな変換関数ユーティリティ
+ * 変換関数ユーティリティ
  */
 export default class Convert {
   // 全角英数字記号を半角に変換
@@ -19,8 +19,10 @@ export default class Convert {
       .replace(/[A-Za-z0-9!-~]/g, (s) => {
         return String.fromCharCode(s.charCodeAt(0) + 0xfee0);
       })
-      .replace(/,/g, "、")
-      .replace(/\./g, "。")
-      .replace(/\//g, "・");
+      .replace(/，/g, "、")
+      .replace(/\．/g, "。")
+      .replace(/\／/g, "・")
+      .replace(/［/g, "「")
+      .replace(/］/g, "」");
   }
 }

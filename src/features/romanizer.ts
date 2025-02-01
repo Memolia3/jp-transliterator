@@ -2,20 +2,19 @@ import Convert from "../utils/convert.utils";
 import { kanaToRomajiMap } from "../data/pattern";
 import type {
   TransliterationTable,
+  OnePattern,
   Pattern,
   Combinations,
 } from "../types/transliterate.types";
+import BaseTransliterator from "./abstract/base-transliterator";
 
 /**
  * かな・カナ → ローマ字変換クラス
  */
-export default class Romanizer {
+export default class Romanizer extends BaseTransliterator {
   private readonly NA_LINE_CHARS: Readonly<string> = "なにぬねのナニヌネノ";
   private readonly N_CHARS: Readonly<string> = "んン";
   private readonly TSU_CHARS: Readonly<string> = "っッ";
-
-  private convertedStr: Pattern = [];
-  private combinations: Combinations = [];
 
   // かな・カナを区切ったマップ
   private optimizedMap: TransliterationTable = Object.entries(
@@ -32,18 +31,29 @@ export default class Romanizer {
    * @param str - ローマ字変換対象文字列
    * @returns combinations Array<[string[文章], string[１文字識別可能文章]]>
    */
-  public romanize(str: string): Combinations | null {
-    if (!str) {
-      return null;
+  public override transliterate(
+    str: string,
+    chunkSize: number = 1000
+  ): Combinations | null | { error: string } {
+    try {
+      if (!str) {
+        return null;
+      }
+
+      const chunks = this.splitIntoChunks(str, chunkSize);
+      const results: Combinations = [];
+
+      for (const chunk of chunks) {
+        const convertedChunk = new Convert().toHalfWidthEnhanced(chunk);
+        const patternArray = this.generatePatternArray(convertedChunk);
+        const combinations = this.generateAllCombinations(patternArray);
+        results.push(...combinations);
+      }
+
+      return results;
+    } catch (e) {
+      return { error: `An error occurred: ${e}` };
     }
-
-    this.convertedStr = this.kanaToRomaji(
-      new Convert().toHalfWidthEnhanced(str)
-    );
-
-    this.combinations = this.generateAllCombinations(this.convertedStr);
-
-    return this.combinations;
   }
 
   /**
@@ -51,10 +61,10 @@ export default class Romanizer {
    * @param str - ローマ字変換対象文字列
    * @returns patterns - 各文字ごとのローマ字パターン配列
    */
-  private kanaToRomaji(str: string): Pattern {
+  protected override generatePatternArray(str: string): Pattern {
     const patterns: Pattern = [];
     let i: number = 0;
-    let matchedPattern: string[];
+    let matchedPattern: OnePattern;
 
     while (i < str.length) {
       // 「ん」「ン」の場合の処理
@@ -112,7 +122,7 @@ export default class Romanizer {
    * @param patterns
    * @returns result Array<[string[文章], string[１文字識別可能文章]]>
    */
-  private generateAllCombinations(patterns: Pattern): Combinations {
+  protected override generateAllCombinations(patterns: Pattern): Combinations {
     const result: Combinations = [];
 
     function backtrack(current: string[], index: number) {
