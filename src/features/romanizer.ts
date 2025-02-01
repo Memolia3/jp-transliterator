@@ -33,7 +33,7 @@ export default class Romanizer extends BaseTransliterator {
    */
   public override transliterate(
     str: string,
-    chunkSize: number = 1000
+    chunkSize: number = 500
   ): Combinations | null | { error: string } {
     try {
       if (!str) {
@@ -123,20 +123,32 @@ export default class Romanizer extends BaseTransliterator {
    * @returns result Array<[string[文章], string[１文字識別可能文章]]>
    */
   protected override generateAllCombinations(patterns: Pattern): Combinations {
-    const result: Combinations = [];
+    const results: Combinations = [];
+    const stack: { current: string[]; parts: string[]; index: number }[] = [
+      {
+        current: [],
+        parts: [],
+        index: 0,
+      },
+    ];
 
-    function backtrack(current: string[], index: number) {
+    while (stack.length > 0) {
+      const { current, parts, index } = stack.pop()!;
+
       if (index === patterns.length) {
-        result.push([[current.join("")], current]);
-        return;
+        results.push([[current.join("")], parts]);
+        continue;
       }
 
-      for (const char of patterns[index]) {
-        backtrack([...current, char], index + 1);
+      for (const char of patterns[index].slice().reverse()) {
+        stack.push({
+          current: [...current, char],
+          parts: [...parts, char],
+          index: index + 1,
+        });
       }
     }
 
-    backtrack([], 0);
-    return result;
+    return results;
   }
 }

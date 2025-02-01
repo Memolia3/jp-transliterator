@@ -78,9 +78,27 @@ export default class Japanizer extends BaseTransliterator {
       return false;
     };
 
+    const isDoubleConsonant = (): boolean => {
+      if (i + 1 < str.length) {
+        const currentChar = str[i];
+        const nextChar = str[i + 1];
+        return (
+          currentChar === nextChar &&
+          "bcdfghjklmpqrstvwxyz".includes(currentChar)
+        );
+      }
+      return false;
+    };
+
     while (i < str.length) {
       if (str[i] === "n" && isNextNaLine()) {
         patterns.push(romajiToKanaMap["n"]);
+        i++;
+        continue;
+      }
+
+      if (isDoubleConsonant()) {
+        patterns.push(romajiToKanaMap["xtu"]);
         i++;
         continue;
       }

@@ -12,6 +12,12 @@ describe("Japanizer", () => {
     japanizer = new Japanizer();
   });
 
+  afterEach(() => {
+    if (global.gc) {
+      global.gc();
+    }
+  });
+
   /**
    * メソッドテスト
    */
@@ -23,9 +29,14 @@ describe("Japanizer", () => {
     });
 
     it("ん＋な行の文章のひらがな/カタカナ変換が正しく行える", () => {
-        const result = japanizer.transliterate("konnitiha");
-        expect(result).toEqual(["こんにちは", "コンニチハ"]);
-      });
+      const result = japanizer.transliterate("konnitiha");
+      expect(result).toEqual(["こんにちは", "コンニチハ"]);
+    });
+
+    it("「っ」を含む文章のひらがな/カタカナ変換が正しく行える", () => {
+      const result = japanizer.transliterate("kkonittihha");
+      expect(result).toEqual(["っこにっちっは", "ッコニッチッハ"]);
+    });
 
     it("空文字入力時にnullを返す", () => {
       expect(japanizer.transliterate("")).toBeNull();
