@@ -1,14 +1,14 @@
 {
   "name": "jp-transliterator",
   "version": "1.0.1",
-  "main": "dist/index.ts",
+  "main": "dist/index.cjs.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
     "test": "jest",
-    "build": "npx tsc"
+    "build": "vite build && tsc --emitDeclarationOnly"
   },
   "repository": {
     "type": "git",
@@ -26,5 +26,15 @@
   },
   "bugs": {
     "url": "https://github.com/Memolia3/jp-transliterator/issues"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "@rollup/rollup-win32-x64-msvc": "^4.34.0"
   }
 }
