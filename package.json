@@ -1,8 +1,9 @@
 {
   "name": "jp-transliterator",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "dist/index.ts",
   "types": "dist/index.d.ts",
+  "files": ["dist"],
   "scripts": {
     "test": "jest",
     "build": "npx tsc"
