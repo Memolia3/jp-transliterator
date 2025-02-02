@@ -21,12 +21,12 @@ jobs:
 
       - name: 依存関係をインストール
         run: |
-          cd examples/Vue-sample
+          cd examples/vue-example
           npm install
 
       - name: ビルド
         run: |
-          cd examples/Vue-sample
+          cd examples/vue-example
           npm run build
 
       - name: GitHub Pages にデプロイ
