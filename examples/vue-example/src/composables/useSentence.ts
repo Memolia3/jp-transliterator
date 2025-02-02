@@ -18,7 +18,7 @@ export function useSentence() {
   const getJapaneseSentence = (str: string): string[][] => {
     const pattern = new Japanizer().transliterate(str);
     if (Array.isArray(pattern)) {
-      return pattern;
+      return Array(pattern);
     } else if (pattern && "error" in pattern) {
       console.error(pattern.error);
       return [];
