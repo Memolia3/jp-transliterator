@@ -33,8 +33,5 @@
       "require": "./dist/index.cjs.js",
       "types": "./dist/index.d.ts"
     }
-  },
-  "dependencies": {
-    "@rollup/rollup-win32-x64-msvc": "^4.34.0"
   }
 }
