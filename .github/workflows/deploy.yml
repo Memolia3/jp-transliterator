@@ -1,15 +1,12 @@
-name: Deploy JpTransliterator Example App to GitHub Pages
+name: Deploy Vue App to GitHub Pages
 
 on:
   push:
     branches:
       - main
 
-permissions:
-  contents: write
-
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,15 +17,20 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: npm
 
       - name: 依存関係をインストール
-        run: npm install
+        run: |
+          cd examples/Vue-sample
+          npm install
 
-      - name: Vue (Vite) アプリをビルド
-        run: npm run build
+      - name: ビルド
+        run: |
+          cd examples/Vue-sample
+          npm run build
 
       - name: GitHub Pages にデプロイ
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: dist
+          folder: examples/Vue-sample/dist
