@@ -10,18 +10,20 @@ export default defineConfig({
       fileName: (format) => `index.${format}.js`,
     },
     rollupOptions: {
-      external: [/^__tests__/],
-      input: {
-        index: resolve(__dirname, "src/index.ts"),
-      },
+      input: resolve(__dirname, "src/index.ts"),
       output: {
-        preserveModules: true
-      }
-    }
+        format: "es",
+        exports: "named",
+      },
+      external: (id) => id.includes('__tests__') || id.includes('.test.') || id.includes('.spec.'),
+    },
   },
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
     },
+  },
+  optimizeDeps: {
+    exclude: ["**/__tests__/**"],
   },
 });
