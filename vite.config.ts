@@ -11,7 +11,13 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [/^__tests__/],
-    },
+      input: {
+        index: resolve(__dirname, "src/index.ts"),
+      },
+      output: {
+        preserveModules: true
+      }
+    }
   },
   resolve: {
     alias: {
