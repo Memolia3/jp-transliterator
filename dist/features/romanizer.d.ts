@@ -7,6 +7,7 @@ export default class Romanizer extends BaseTransliterator {
     private static readonly NA_LINE_CHARS;
     private static readonly N_CHARS;
     private static readonly TSU_CHARS;
+    private static readonly CONSONANT_TRANS_ROMAN_CHARS;
     private readonly optimizedMap;
     private readonly patternCache;
     private readonly MAX_CACHE_SIZE;

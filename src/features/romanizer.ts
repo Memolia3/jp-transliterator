@@ -27,6 +27,20 @@ export default class Romanizer extends BaseTransliterator {
 
   private static readonly N_CHARS = new Set(["ん", "ン"]);
   private static readonly TSU_CHARS = new Set(["っ", "ッ"]);
+  private static readonly CONSONANT_TRANS_ROMAN_CHARS = new Set([
+    "ti",
+    "chi",
+    "hu",
+    "fu",
+    "zi",
+    "ji",
+    "tya",
+    "cha",
+    "tyu",
+    "chu",
+    "tyo",
+    "cho",
+  ]);
 
   private readonly optimizedMap: TransliterationTable = Object.freeze(
     Object.entries(
@@ -85,7 +99,29 @@ export default class Romanizer extends BaseTransliterator {
    */
   private mergeResults(target: Combinations, source: Combinations): void {
     for (const combination of source) {
-      target.push(combination);
+      const [romaji, parts] = combination;
+
+      // 子音チェック
+      let isValid = true;
+      for (let j = 0; j < parts.length - 1; j++) {
+        const currentPart = parts[j];
+        const nextPart = parts[j + 1];
+
+        const hasMatchingConsonant =
+          Romanizer.CONSONANT_TRANS_ROMAN_CHARS.has(nextPart);
+
+        if (currentPart.length === 1 && hasMatchingConsonant) {
+          const consonant = nextPart.charAt(0);
+          if (!currentPart.startsWith(consonant)) {
+            isValid = false;
+            break; // Exit the loop if a mismatch is found
+          }
+        }
+      }
+
+      if (isValid) {
+        target.push([romaji, parts]);
+      }
     }
   }
 
@@ -163,9 +199,16 @@ export default class Romanizer extends BaseTransliterator {
     const tsuPattern = this.optimizedMap[str[i]];
     const nextChar = str[i + 1];
     if (nextChar && this.optimizedMap[nextChar]) {
-      const nextCharPattern = this.optimizedMap[nextChar][0];
-      const consonant = nextCharPattern.charAt(0);
-      patterns.push([...tsuPattern, consonant]);
+      const nextCharPatterns = this.optimizedMap[nextChar];
+      const validPatterns = nextCharPatterns.map((pattern) => {
+        const consonant = pattern.charAt(0);
+        if (Romanizer.CONSONANT_TRANS_ROMAN_CHARS.has(pattern)) {
+          return consonant;
+        }
+        return pattern;
+      });
+
+      patterns.push(validPatterns);
       return true;
     }
     patterns.push(tsuPattern);
@@ -206,11 +249,18 @@ export default class Romanizer extends BaseTransliterator {
           continue;
         }
 
-        // パターンを文字数でソート
-        const sortedPattern = [...patterns[index]].sort(
-          (a, b) => a.length - b.length
-        );
-        for (const char of sortedPattern) {
+        // パターンを文字数の昇順で処理
+        const pattern = patterns[index];
+        const shortToLong = pattern
+          .reduce<string[][]>((acc, char) => {
+            const len = char.length;
+            acc[len] = acc[len] || [];
+            acc[len].push(char);
+            return acc;
+          }, [])
+          .flat();
+
+        for (const char of shortToLong) {
           nextBatch.push({
             current: current.concat(char),
             parts: parts.concat(char),

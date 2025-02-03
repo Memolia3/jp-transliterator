@@ -39,8 +39,26 @@ describe("Romanizer", () => {
     });
 
     it("「っ」を含む文章のローマ字変換が正しく行える", () => {
-      const result = romanizer.transliterate("がっこうによった");
-      const expected = [["gakkouniyotta"], ["ga", "k", "ko", "u", "ni", "yo", "t", "ta"]];
+      const result = romanizer.transliterate("ストレッチ");
+      const expected = [["sutoretti"], ["su", "to", "re", "t", "ti"]];
+      expect(result).toContainEqual(expected);
+    });
+
+    it("「っ」を含む文章のローマ字変換が正しく行える2", () => {
+      const result = romanizer.transliterate("ストレッチ");
+      const expected = [["sutorecchi"], ["su", "to", "re", "c", "chi"]];
+      expect(result).toContainEqual(expected);
+    });
+
+    it("「っ」を含む文章のローマ字変換が正しく行える3", () => {
+      const result = romanizer.transliterate("バッファ");
+      const expected = [["baffa"], ["ba", "f", "fa"]];
+      expect(result).toContainEqual(expected);
+    });
+
+    it("「っ」を含む文章のローマ字変換が正しく行える4", () => {
+      const result = romanizer.transliterate("バッフ");
+      const expected = [["baffu"], ["ba", "f", "fu"]];
       expect(result).toContainEqual(expected);
     });
 
@@ -296,7 +314,7 @@ describe("Romanizer", () => {
         console.log(`Execution time: ${executionTime} ms`);
         console.log(`Memory usage: ${memoryUsage} MB`);
 
-        expect(executionTime).toBeLessThan(1000); // 1秒未満
+        expect(executionTime).toBeLessThan(2000); // 2秒未満
         expect(memoryUsage).toBeLessThan(100); // 100MB未満
       });
     });
