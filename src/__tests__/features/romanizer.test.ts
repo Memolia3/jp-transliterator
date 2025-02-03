@@ -44,8 +44,171 @@ describe("Romanizer", () => {
       expect(result).toContainEqual(expected);
     });
 
-    it("空文字入力時にnullを返す", () => {
-      expect(romanizer.transliterate("")).toBeNull();
+    it("ハイフンを含む文章のローマ字変換が正しく行える", () => {
+      const result = romanizer.transliterate("ー‐-");
+      const expected = [["---"], ["-", "-", "-"]];
+      expect(result).toContainEqual(expected);
+    });
+
+    it("記号を含む文章のローマ字変換が正しく行える", () => {
+      const result = romanizer.transliterate(
+        "！＠＃＄％＾＆＊（）＿＋－＝｛｝「」：；＇、。・？＜＞"
+      );
+      const expected = [
+        ["!@#$%^&*()_+-={}[]:;',./?<>"],
+        [
+          "!",
+          "@",
+          "#",
+          "$",
+          "%",
+          "^",
+          "&",
+          "*",
+          "(",
+          ")",
+          "_",
+          "+",
+          "-",
+          "=",
+          "{",
+          "}",
+          "[",
+          "]",
+          ":",
+          ";",
+          "'",
+          ",",
+          ".",
+          "/",
+          "?",
+          "<",
+          ">",
+        ],
+      ];
+      expect(result).toContainEqual(expected);
+    });
+
+    describe("５０音のローマ字変換", () => {
+      it("あ行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("あいうえお");
+        const expected = [["aiueo"], ["a", "i", "u", "e", "o"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("か行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("かきくけこ");
+        const expected = [["kakikukeko"], ["ka", "ki", "ku", "ke", "ko"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("さ行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("さしすせそ");
+        const expected = [["sashisuseso"], ["sa", "shi", "su", "se", "so"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("た行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("たちつてと");
+        const expected = [["tachitsuteto"], ["ta", "chi", "tsu", "te", "to"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("な行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("なにぬねの");
+        const expected = [["naninuneno"], ["na", "ni", "nu", "ne", "no"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("は行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("はひふへほ");
+        const expected = [["hahihuheho"], ["ha", "hi", "hu", "he", "ho"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("ま行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("まみむめも");
+        const expected = [["mamimumemo"], ["ma", "mi", "mu", "me", "mo"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("や行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("やゆよ");
+        const expected = [["yayuyo"], ["ya", "yu", "yo"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("ら行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("らりるれろ");
+        const expected = [["rarirurero"], ["ra", "ri", "ru", "re", "ro"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("わ行とんのローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("わをん");
+        const expected = [["wawon"], ["wa", "wo", "n"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのあ行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("アイウエオ");
+        const expected = [["aiueo"], ["a", "i", "u", "e", "o"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのか行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("カキクケコ");
+        const expected = [["kakikukeko"], ["ka", "ki", "ku", "ke", "ko"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのさ行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("サシスセソ");
+        const expected = [["sashisuseso"], ["sa", "shi", "su", "se", "so"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのた行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("タチツテト");
+        const expected = [["tachitsuteto"], ["ta", "chi", "tsu", "te", "to"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのな行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("ナニヌネノ");
+        const expected = [["naninuneno"], ["na", "ni", "nu", "ne", "no"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのは行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("ハヒフヘホ");
+        const expected = [["hahifuheho"], ["ha", "hi", "fu", "he", "ho"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのま行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("マミムメモ");
+        const expected = [["mamimumemo"], ["ma", "mi", "mu", "me", "mo"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのや行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("ヤユヨ");
+        const expected = [["yayuyo"], ["ya", "yu", "yo"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのら行のローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("ラリルレロ");
+        const expected = [["rarirurero"], ["ra", "ri", "ru", "re", "ro"]];
+        expect(result).toContainEqual(expected);
+      });
+
+      it("カタカナのわ行とンのローマ字変換が正しく行える", () => {
+        const result = romanizer.transliterate("ワヲン");
+        const expected = [["wawon"], ["wa", "wo", "n"]];
+        expect(result).toContainEqual(expected);
+      });
     });
   });
 

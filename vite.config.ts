@@ -9,6 +9,9 @@ export default defineConfig({
       formats: ["es", "cjs"],
       fileName: (format) => `index.${format}.js`,
     },
+    rollupOptions: {
+      external: [/^__tests__/],
+    },
   },
   resolve: {
     alias: {

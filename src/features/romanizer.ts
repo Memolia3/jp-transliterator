@@ -12,141 +12,256 @@ import BaseTransliterator from "./abstract/base-transliterator";
  * かな・カナ → ローマ字変換クラス
  */
 export default class Romanizer extends BaseTransliterator {
-  private readonly NA_LINE_CHARS: Readonly<string> = "なにぬねのナニヌネノ";
-  private readonly N_CHARS: Readonly<string> = "んン";
-  private readonly TSU_CHARS: Readonly<string> = "っッ";
+  private static readonly NA_LINE_CHARS = new Set([
+    "な",
+    "に",
+    "ぬ",
+    "ね",
+    "の",
+    "ナ",
+    "ニ",
+    "ヌ",
+    "ネ",
+    "ノ",
+  ]);
 
-  // かな・カナを区切ったマップ
-  private optimizedMap: TransliterationTable = Object.entries(
-    kanaToRomajiMap as TransliterationTable
-  ).reduce<TransliterationTable>((acc, [key, value]) => {
-    key.split("|").forEach((char) => {
-      acc[char] = value;
-    });
-    return acc;
-  }, {});
+  private static readonly N_CHARS = new Set(["ん", "ン"]);
+  private static readonly TSU_CHARS = new Set(["っ", "ッ"]);
+
+  private readonly optimizedMap: TransliterationTable = Object.freeze(
+    Object.entries(
+      kanaToRomajiMap as TransliterationTable
+    ).reduce<TransliterationTable>((acc, [key, value]) => {
+      key.split("|").forEach((char) => {
+        acc[char] = value;
+      });
+      return acc;
+    }, {})
+  );
+
+  private readonly patternCache = new Map<string, Pattern>();
+  private readonly MAX_CACHE_SIZE = 1000;
 
   /**
    * かな・カナ → ローマ字変換
-   * @param str - ローマ字変換対象文字列
-   * @returns combinations Array<[string[文章], string[１文字識別可能文章]]>
+   * @param str 変換対象文字列
+   * @param chunkSize チャンクサイズ
    */
   public override transliterate(
     str: string,
-    chunkSize: number = 500
+    chunkSize: number = 100 // チャンクサイズを小さくする
   ): Combinations | null | { error: string } {
-    try {
-      if (!str) {
-        return null;
-      }
+    if (!str?.length) return null;
 
+    try {
       const chunks = this.splitIntoChunks(str, chunkSize);
-      const results: Combinations = [];
+      let results: Combinations = [];
 
       for (const chunk of chunks) {
-        const convertedChunk = new Convert().toHalfWidthEnhanced(chunk);
+        const convertedChunk = Convert.toHalfWidth(chunk);
         const patternArray = this.generatePatternArray(convertedChunk);
+        if (!patternArray.length) continue;
+
         const combinations = this.generateAllCombinations(patternArray);
-        results.push(...combinations);
+        this.mergeResults(results, combinations);
+
+        if (this.patternCache.size > this.MAX_CACHE_SIZE) {
+          this.patternCache.clear();
+        }
       }
 
-      return results;
+      return results.length ? results : null;
     } catch (e) {
-      return { error: `An error occurred: ${e}` };
+      return {
+        error: `変換エラーが発生しました: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
+      };
+    }
+  }
+
+  /**
+   * チャンク処理の結果を合成
+   */
+  private mergeResults(target: Combinations, source: Combinations): void {
+    for (const combination of source) {
+      target.push(combination);
     }
   }
 
   /**
    * かな文字のローマ字パターンを配列で返す
-   * @param str - ローマ字変換対象文字列
-   * @returns patterns - 各文字ごとのローマ字パターン配列
    */
   protected override generatePatternArray(str: string): Pattern {
+    // キャッシュをチェック
+    const cached = this.patternCache.get(str);
+    if (cached) return cached;
+
     const patterns: Pattern = [];
-    let i: number = 0;
-    let matchedPattern: OnePattern;
+    let i = 0;
 
     while (i < str.length) {
-      // 「ん」「ン」の場合の処理
-      if (this.N_CHARS.includes(str[i])) {
-        patterns.push(
-          i + 1 < str.length && this.NA_LINE_CHARS.includes(str[i + 1])
-            ? ["nn"]
-            : ["n", "nn"]
-        );
+      // 「ん」「ン」の処理
+      if (this.handleSpecialN(str, i, patterns)) {
         i++;
         continue;
       }
 
-      // 「っ」「ッ」の場合の処理
-      if (this.TSU_CHARS.includes(str[i])) {
-        const tsuPattern = this.optimizedMap[str[i]];
-        const nextChar = str[i + 1];
-        if (nextChar && this.optimizedMap[nextChar]) {
-          const nextCharPattern = this.optimizedMap[nextChar][0];
-          const consonant = nextCharPattern.charAt(0);
-          patterns.push([...tsuPattern, consonant]);
-        } else {
-          patterns.push(tsuPattern);
-        }
+      // 「っ」「ッ」の処理
+      if (this.handleTsu(str, i, patterns)) {
         i++;
         continue;
       }
 
       // 拗音の処理
-      if (i + 1 < str.length) {
-        const twoChars: string = str.slice(i, i + 2);
-        matchedPattern = this.optimizedMap[twoChars];
-        if (matchedPattern) {
-          patterns.push(matchedPattern);
-          i += 2;
-          continue;
-        }
+      const yoonResult = this.handleYoon(str, i);
+      if (yoonResult) {
+        patterns.push(yoonResult.pattern);
+        i += yoonResult.length;
+        continue;
       }
 
-      // 単音の処理
-      matchedPattern = this.optimizedMap[str[i]];
-      if (matchedPattern) {
-        patterns.push(matchedPattern);
-      } else {
-        patterns.push([str[i]]);
-      }
+      // 通常文字の処理
+      const pattern = this.optimizedMap[str[i]];
+      patterns.push(pattern || [str[i]]);
       i++;
+    }
+
+    // 結果をキャッシュ
+    if (str.length <= 10) {
+      // 短い文字列のみキャッシュ
+      this.patternCache.set(str, patterns);
     }
 
     return patterns;
   }
 
   /**
-   * 全てのローマ字パターンを出力
-   * @param patterns
-   * @returns result Array<[string[文章], string[１文字識別可能文章]]>
+   * 「ん」「ン」の特殊処理
+   */
+  private handleSpecialN(str: string, i: number, patterns: Pattern): boolean {
+    if (
+      Romanizer.N_CHARS.has(str[i]) &&
+      i + 1 < str.length &&
+      Romanizer.NA_LINE_CHARS.has(str[i + 1])
+    ) {
+      patterns.push(["nn"]);
+      return true;
+    } else if (Romanizer.N_CHARS.has(str[i])) {
+      patterns.push(["n", "nn"]);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 「っ」「ッ」の処理
+   */
+  private handleTsu(str: string, i: number, patterns: Pattern): boolean {
+    if (!Romanizer.TSU_CHARS.has(str[i])) return false;
+
+    const tsuPattern = this.optimizedMap[str[i]];
+    const nextChar = str[i + 1];
+    if (nextChar && this.optimizedMap[nextChar]) {
+      const nextCharPattern = this.optimizedMap[nextChar][0];
+      const consonant = nextCharPattern.charAt(0);
+      patterns.push([...tsuPattern, consonant]);
+      return true;
+    }
+    patterns.push(tsuPattern);
+    return true;
+  }
+
+  /**
+   * 拗音の処理
+   */
+  private handleYoon(
+    str: string,
+    i: number
+  ): { pattern: OnePattern; length: number } | null {
+    if (i + 1 >= str.length) return null;
+
+    const twoChars = str.slice(i, i + 2);
+    const pattern = this.optimizedMap[twoChars];
+    if (pattern) {
+      return { pattern, length: 2 };
+    }
+    return null;
+  }
+
+  /**
+   * ローマ字パターンの組み合わせを生成
    */
   protected override generateAllCombinations(patterns: Pattern): Combinations {
     const results: Combinations = [];
-    const stack: { current: string[]; parts: string[]; index: number }[] = [
-      {
-        current: [],
-        parts: [],
-        index: 0,
-      },
-    ];
+    let currentBatch: { current: string[]; parts: string[]; index: number }[] =
+      [{ current: [], parts: [], index: 0 }];
+    const BATCH_SIZE = 1000;
 
-    while (stack.length > 0) {
-      const { current, parts, index } = stack.pop()!;
+    while (currentBatch.length > 0) {
+      const nextBatch: typeof currentBatch = [];
 
-      if (index === patterns.length) {
-        results.push([[current.join("")], parts]);
-        continue;
+      for (const { current, parts, index } of currentBatch) {
+        if (index === patterns.length) {
+          results.push([[current.join("")], parts]);
+          if (results.length >= 5000) return results;
+          continue;
+        }
+
+        const pattern = patterns[index];
+        for (let i = 0; i < pattern.length; i++) {
+          const char = pattern[i];
+          nextBatch.push({
+            current: current.concat(char),
+            parts: parts.concat(char),
+            index: index + 1,
+          });
+
+          if (nextBatch.length >= BATCH_SIZE) {
+            currentBatch = nextBatch;
+            return this.processBatch(currentBatch, patterns, BATCH_SIZE);
+          }
+        }
       }
 
-      for (const char of patterns[index].slice().reverse()) {
-        stack.push({
-          current: [...current, char],
-          parts: [...parts, char],
-          index: index + 1,
-        });
+      currentBatch = nextBatch;
+    }
+
+    return results;
+  }
+
+  private processBatch(
+    initialBatch: { current: string[]; parts: string[]; index: number }[],
+    patterns: Pattern,
+    batchSize: number
+  ): Combinations {
+    const results: Combinations = [];
+    let currentBatch = initialBatch;
+
+    while (currentBatch.length > 0) {
+      const nextBatch: typeof currentBatch = [];
+
+      for (const { current, parts, index } of currentBatch) {
+        if (index === patterns.length) {
+          results.push([[current.join("")], parts]);
+          if (results.length >= 5000) return results;
+          continue;
+        }
+
+        const pattern = patterns[index];
+        for (let i = 0; i < pattern.length; i++) {
+          const char = pattern[i];
+          nextBatch.push({
+            current: current.concat(char),
+            parts: parts.concat(char),
+            index: index + 1,
+          });
+
+          if (nextBatch.length >= batchSize) break;
+        }
       }
+
+      currentBatch = nextBatch;
     }
 
     return results;

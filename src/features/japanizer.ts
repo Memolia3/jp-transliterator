@@ -11,35 +11,76 @@ import BaseTransliterator from "./abstract/base-transliterator";
  * ローマ字 → かな・カナ変換クラス
  */
 export default class Japanizer extends BaseTransliterator {
+  private static readonly NA_LINE_CHARS = new Set([
+    "na",
+    "ni",
+    "nu",
+    "ne",
+    "no",
+  ]);
+  private static readonly CONSONANTS = new Set([
+    "b",
+    "c",
+    "d",
+    "f",
+    "g",
+    "h",
+    "j",
+    "k",
+    "l",
+    "m",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z",
+  ]);
+
+  private static readonly PATTERN_LENGTHS = [4, 3, 2, 1] as const;
+
   /**
    * ローマ字 → かな・カナ変換
+   * @param str 変換対象文字列
+   * @param chunkSize チャンクサイズ
    */
   public override transliterate(
     str: string,
     chunkSize: number = 1000
   ): OnePattern | null | { error: string } {
-    try {
-      if (!str) {
-        return null;
-      }
+    if (!str?.length) return null;
 
+    try {
       const chunks = this.splitIntoChunks(str, chunkSize);
       const results: OnePattern[] = [];
 
       for (const chunk of chunks) {
-        const convertedChunk = new Convert().toHalfWidthEnhanced(chunk);
+        const convertedChunk = Convert.toHalfWidth(chunk);
         const patternArray = this.generatePatternArray(convertedChunk);
+        if (!patternArray.length) continue;
+
         const combinations = this.generateAllCombinations(patternArray);
         const kanaPattern = this.transformCombination(combinations);
         results.push(kanaPattern);
       }
 
-      return this.mergeResults(results);
+      return results.length ? this.mergeResults(results) : null;
     } catch (e) {
-      return { error: `An error occurred: ${e}` };
+      return {
+        error: `変換エラーが発生しました: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
+      };
     }
   }
 
+  /**
+   * チャンク処理の結果を合成
+   */
   private mergeResults(results: OnePattern[]): OnePattern {
     return [
       results.map((r) => r[0]).join(""),
@@ -49,68 +90,34 @@ export default class Japanizer extends BaseTransliterator {
 
   /**
    * ローマ字のかな文字パターンを配列で返す
-   * @param str - かな文字変換対象文字列
-   * @returns patterns - 各文字ごとのかな文字パターン配列
    */
   protected generatePatternArray(str: string): Pattern {
     const patterns: Pattern = [];
-    let i: number = 0;
-    let matchedPattern: OnePattern;
-
-    const checkAndAddPattern = (length: number): boolean => {
-      if (i + length <= str.length) {
-        const chars = str.slice(i, i + length);
-        matchedPattern = romajiToKanaMap[chars];
-        if (matchedPattern) {
-          patterns.push(matchedPattern);
-          i += length;
-          return true;
-        }
-      }
-      return false;
-    };
-
-    const isNextNaLine = (): boolean => {
-      if (i + 1 < str.length) {
-        const nextChars = str.slice(i + 1, i + 3);
-        return ["na", "ni", "nu", "ne", "no"].includes(nextChars);
-      }
-      return false;
-    };
-
-    const isDoubleConsonant = (): boolean => {
-      if (i + 1 < str.length) {
-        const currentChar = str[i];
-        const nextChar = str[i + 1];
-        return (
-          currentChar === nextChar &&
-          "bcdfghjklmpqrstvwxyz".includes(currentChar)
-        );
-      }
-      return false;
-    };
+    let i = 0;
 
     while (i < str.length) {
-      if (str[i] === "n" && isNextNaLine()) {
-        patterns.push(romajiToKanaMap["n"]);
+      // 「ん」の特殊処理
+      if (this.handleSpecialN(str, i, patterns)) {
         i++;
         continue;
       }
 
-      if (isDoubleConsonant()) {
-        patterns.push(romajiToKanaMap["xtu"]);
+      // 促音の処理
+      if (this.handleDoubleConsonant(str, i, patterns)) {
         i++;
         continue;
       }
 
-      if ([4, 3, 2].some(checkAndAddPattern)) continue;
-
-      matchedPattern = romajiToKanaMap[str[i]];
-      if (matchedPattern) {
-        patterns.push(matchedPattern);
-      } else {
-        patterns.push([str[i], str[i]]);
+      // 通常のパターンマッチング
+      const matched = this.matchPattern(str, i);
+      if (matched) {
+        patterns.push(matched.pattern);
+        i += matched.length;
+        continue;
       }
+
+      // マッチしない文字はそのまま追加
+      patterns.push([str[i], str[i]]);
       i++;
     }
 
@@ -118,29 +125,72 @@ export default class Japanizer extends BaseTransliterator {
   }
 
   /**
-   * ひらがな・カタカナのパターンを返す
-   * @param patterns
-   * @returns [[[hiragana], [katakana]]]
+   * 「ん」の特殊処理
    */
-  protected override generateAllCombinations(patterns: Pattern): Combinations {
-    const converter = new Convert();
-    const hiragana = patterns.map((pair) => pair[0]).join("");
-    const katakana = patterns.map((pair) => pair[1]).join("");
-
-    return [
-      [
-        [converter.toFullWidthEnhanced(hiragana)],
-        [converter.toFullWidthEnhanced(katakana)],
-      ],
-    ];
+  private handleSpecialN(str: string, i: number, patterns: Pattern): boolean {
+    if (
+      str[i] === "n" &&
+      i + 1 < str.length &&
+      Japanizer.NA_LINE_CHARS.has(str.slice(i + 1, i + 3))
+    ) {
+      patterns.push(romajiToKanaMap["n"]);
+      return true;
+    }
+    return false;
   }
 
   /**
-   * コンビネーション型変換
-   * @param combination
-   * @returns [hiragana, katakana] [[[]]]の配列を[]にする
+   * 促音の処理
    */
-  private transformCombination(combination: Combinations) {
+  private handleDoubleConsonant(
+    str: string,
+    i: number,
+    patterns: Pattern
+  ): boolean {
+    if (
+      i + 1 < str.length &&
+      str[i] === str[i + 1] &&
+      Japanizer.CONSONANTS.has(str[i])
+    ) {
+      patterns.push(romajiToKanaMap["xtu"]);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * パターンマッチング
+   */
+  private matchPattern(
+    str: string,
+    i: number
+  ): { pattern: OnePattern; length: number } | null {
+    for (const length of Japanizer.PATTERN_LENGTHS) {
+      if (i + length <= str.length) {
+        const chars = str.slice(i, i + length);
+        const pattern = romajiToKanaMap[chars];
+        if (pattern) {
+          return { pattern, length };
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * ひらがな・カタカナのパターンを生成
+   */
+  protected override generateAllCombinations(patterns: Pattern): Combinations {
+    const hiragana = patterns.map((pair) => pair[0]).join("");
+    const katakana = patterns.map((pair) => pair[1]).join("");
+
+    return [[[Convert.toFullWidth(hiragana)], [Convert.toFullWidth(katakana)]]];
+  }
+
+  /**
+   * コンビネーション変換
+   */
+  private transformCombination(combination: Combinations): OnePattern {
     const [[hiragana], [katakana]] = combination[0];
     return [hiragana, katakana];
   }
