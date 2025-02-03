@@ -4,29 +4,43 @@ import BaseTransliterator from "./abstract/base-transliterator";
  * ローマ字 → かな・カナ変換クラス
  */
 export default class Japanizer extends BaseTransliterator {
+    private static readonly NA_LINE_CHARS;
+    private static readonly CONSONANTS;
+    private static readonly PATTERN_LENGTHS;
     /**
      * ローマ字 → かな・カナ変換
+     * @param str 変換対象文字列
+     * @param chunkSize チャンクサイズ
      */
     transliterate(str: string, chunkSize?: number): OnePattern | null | {
         error: string;
     };
+    /**
+     * チャンク処理の結果を合成
+     */
     private mergeResults;
     /**
      * ローマ字のかな文字パターンを配列で返す
-     * @param str - かな文字変換対象文字列
-     * @returns patterns - 各文字ごとのかな文字パターン配列
      */
     protected generatePatternArray(str: string): Pattern;
     /**
-     * ひらがな・カタカナのパターンを返す
-     * @param patterns
-     * @returns [[[hiragana], [katakana]]]
+     * 「ん」の特殊処理
+     */
+    private handleSpecialN;
+    /**
+     * 促音の処理
+     */
+    private handleDoubleConsonant;
+    /**
+     * パターンマッチング
+     */
+    private matchPattern;
+    /**
+     * ひらがな・カタカナのパターンを生成
      */
     protected generateAllCombinations(patterns: Pattern): Combinations;
     /**
-     * コンビネーション型変換
-     * @param combination
-     * @returns [hiragana, katakana] [[[]]]の配列を[]にする
+     * コンビネーション変換
      */
     private transformCombination;
 }

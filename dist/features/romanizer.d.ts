@@ -4,29 +4,44 @@ import BaseTransliterator from "./abstract/base-transliterator";
  * かな・カナ → ローマ字変換クラス
  */
 export default class Romanizer extends BaseTransliterator {
-    private readonly NA_LINE_CHARS;
-    private readonly N_CHARS;
-    private readonly TSU_CHARS;
-    private optimizedMap;
+    private static readonly NA_LINE_CHARS;
+    private static readonly N_CHARS;
+    private static readonly TSU_CHARS;
+    private readonly optimizedMap;
+    private readonly patternCache;
+    private readonly MAX_CACHE_SIZE;
     /**
      * かな・カナ → ローマ字変換
-     * @param str - ローマ字変換対象文字列
-     * @returns combinations Array<[string[文章], string[１文字識別可能文章]]>
+     * @param str 変換対象文字列
+     * @param chunkSize チャンクサイズ
      */
     transliterate(str: string, chunkSize?: number): Combinations | null | {
         error: string;
     };
     /**
+     * チャンク処理の結果を合成
+     */
+    private mergeResults;
+    /**
      * かな文字のローマ字パターンを配列で返す
-     * @param str - ローマ字変換対象文字列
-     * @returns patterns - 各文字ごとのローマ字パターン配列
      */
     protected generatePatternArray(str: string): Pattern;
     /**
-     * 全てのローマ字パターンを出力
-     * @param patterns
-     * @returns result Array<[string[文章], string[１文字識別可能文章]]>
+     * 「ん」「ン」の特殊処理
+     */
+    private handleSpecialN;
+    /**
+     * 「っ」「ッ」の処理
+     */
+    private handleTsu;
+    /**
+     * 拗音の処理
+     */
+    private handleYoon;
+    /**
+     * ローマ字パターンの組み合わせを生成
      */
     protected generateAllCombinations(patterns: Pattern): Combinations;
+    private processBatch;
 }
 //# sourceMappingURL=romanizer.d.ts.map
