@@ -196,7 +196,6 @@ export default class Romanizer extends BaseTransliterator {
     const results: Combinations = [];
     let currentBatch: { current: string[]; parts: string[]; index: number }[] =
       [{ current: [], parts: [], index: 0 }];
-    const BATCH_SIZE = 1000;
 
     while (currentBatch.length > 0) {
       const nextBatch: typeof currentBatch = [];
@@ -204,60 +203,19 @@ export default class Romanizer extends BaseTransliterator {
       for (const { current, parts, index } of currentBatch) {
         if (index === patterns.length) {
           results.push([[current.join("")], parts]);
-          if (results.length >= 5000) return results;
           continue;
         }
 
-        const pattern = patterns[index];
-        for (let i = 0; i < pattern.length; i++) {
-          const char = pattern[i];
+        // パターンを文字数でソート
+        const sortedPattern = [...patterns[index]].sort(
+          (a, b) => a.length - b.length
+        );
+        for (const char of sortedPattern) {
           nextBatch.push({
             current: current.concat(char),
             parts: parts.concat(char),
             index: index + 1,
           });
-
-          if (nextBatch.length >= BATCH_SIZE) {
-            currentBatch = nextBatch;
-            return this.processBatch(currentBatch, patterns, BATCH_SIZE);
-          }
-        }
-      }
-
-      currentBatch = nextBatch;
-    }
-
-    return results;
-  }
-
-  private processBatch(
-    initialBatch: { current: string[]; parts: string[]; index: number }[],
-    patterns: Pattern,
-    batchSize: number
-  ): Combinations {
-    const results: Combinations = [];
-    let currentBatch = initialBatch;
-
-    while (currentBatch.length > 0) {
-      const nextBatch: typeof currentBatch = [];
-
-      for (const { current, parts, index } of currentBatch) {
-        if (index === patterns.length) {
-          results.push([[current.join("")], parts]);
-          if (results.length >= 5000) return results;
-          continue;
-        }
-
-        const pattern = patterns[index];
-        for (let i = 0; i < pattern.length; i++) {
-          const char = pattern[i];
-          nextBatch.push({
-            current: current.concat(char),
-            parts: parts.concat(char),
-            index: index + 1,
-          });
-
-          if (nextBatch.length >= batchSize) break;
         }
       }
 

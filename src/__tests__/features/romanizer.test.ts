@@ -39,8 +39,8 @@ describe("Romanizer", () => {
     });
 
     it("「っ」を含む文章のローマ字変換が正しく行える", () => {
-      const result = romanizer.transliterate("がっこう");
-      const expected = [["gakkou"], ["ga", "k", "ko", "u"]];
+      const result = romanizer.transliterate("がっこうによった");
+      const expected = [["gakkouniyotta"], ["ga", "k", "ko", "u", "ni", "yo", "t", "ta"]];
       expect(result).toContainEqual(expected);
     });
 
