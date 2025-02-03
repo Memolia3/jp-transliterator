@@ -42,6 +42,5 @@ export default class Romanizer extends BaseTransliterator {
      * ローマ字パターンの組み合わせを生成
      */
     protected generateAllCombinations(patterns: Pattern): Combinations;
-    private processBatch;
 }
 //# sourceMappingURL=romanizer.d.ts.map
