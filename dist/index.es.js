@@ -242,11 +242,11 @@ const C = {
   "ゔょ|ヴョ": ["vyo"],
   "っ|ッ": ["xtu", "xtsu", "ltu", "ltsu"],
   "ゎ|ヮ": ["xwa", "lwa"]
-}, c = {};
+}, l = {};
 for (const [w, t] of Object.entries(C)) {
   const [e, n] = w.split("|");
   t.forEach((a) => {
-    c[a] ? (c[a].includes(e) || c[a].push(e), c[a].includes(n) || c[a].push(n)) : c[a] = [e, n];
+    l[a] ? (l[a].includes(e) || l[a].push(e), l[a].includes(n) || l[a].push(n)) : l[a] = [e, n];
   });
 }
 class m {
@@ -289,8 +289,8 @@ const u = class u extends m {
       for (const i of n) {
         const h = p.toHalfWidth(i), o = this.generatePatternArray(h);
         if (!o.length) continue;
-        const l = this.generateAllCombinations(o);
-        this.mergeResults(a, l), this.patternCache.size > this.MAX_CACHE_SIZE && this.patternCache.clear();
+        const r = this.generateAllCombinations(o);
+        this.mergeResults(a, r), this.patternCache.size > this.MAX_CACHE_SIZE && this.patternCache.clear();
       }
       return a.length ? a : null;
     } catch (n) {
@@ -307,11 +307,11 @@ const u = class u extends m {
       const [a, i] = n;
       let h = !0;
       for (let o = 0; o < i.length - 1; o++) {
-        const l = i[o], f = i[o + 1], r = u.CONSONANT_TRANS_ROMAN_CHARS.has(f);
-        if (l.length === 1 && r) {
+        const r = i[o], f = i[o + 1], c = u.CONSONANT_TRANS_ROMAN_CHARS.has(f);
+        if (r.length === 1 && c) {
           const g = f.charAt(0);
-          if (!l.startsWith(g)) {
-            h = !1;
+          if (!r.startsWith(g)) {
+            console.log(r, f), h = !1;
             break;
           }
         }
@@ -385,14 +385,14 @@ const u = class u extends m {
           e.push([[i.join("")], h]);
           continue;
         }
-        const f = t[o].reduce((r, g) => {
+        const f = t[o].reduce((c, g) => {
           const d = g.length;
-          return r[d] = r[d] || [], r[d].push(g), r;
+          return c[d] = c[d] || [], c[d].push(g), c;
         }, []).flat();
-        for (const r of f)
+        for (const c of f)
           a.push({
-            current: i.concat(r),
-            parts: h.concat(r),
+            current: i.concat(c),
+            parts: h.concat(c),
             index: o + 1
           });
       }
@@ -421,6 +421,7 @@ u.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "ji",
   "tya",
   "cha",
+  "cya",
   "tyu",
   "chu",
   "tyo",
@@ -440,7 +441,7 @@ const y = class y extends m {
       for (const i of n) {
         const h = p.toHalfWidth(i), o = this.generatePatternArray(h);
         if (!o.length) continue;
-        const l = this.generateAllCombinations(o), f = this.transformCombination(l);
+        const r = this.generateAllCombinations(o), f = this.transformCombination(r);
         a.push(f);
       }
       return a.length ? this.mergeResults(a) : null;
@@ -487,13 +488,13 @@ const y = class y extends m {
    * 「ん」の特殊処理
    */
   handleSpecialN(t, e, n) {
-    return t[e] === "n" && e + 1 < t.length && y.NA_LINE_CHARS.has(t.slice(e + 1, e + 3)) ? (n.push(c.n), !0) : !1;
+    return t[e] === "n" && e + 1 < t.length && y.NA_LINE_CHARS.has(t.slice(e + 1, e + 3)) ? (n.push(l.n), !0) : !1;
   }
   /**
    * 促音の処理
    */
   handleDoubleConsonant(t, e, n) {
-    return e + 1 < t.length && t[e] === t[e + 1] && y.CONSONANTS.has(t[e]) ? (n.push(c.xtu), !0) : !1;
+    return e + 1 < t.length && t[e] === t[e + 1] && y.CONSONANTS.has(t[e]) ? (n.push(l.xtu), !0) : !1;
   }
   /**
    * パターンマッチング
@@ -501,7 +502,7 @@ const y = class y extends m {
   matchPattern(t, e) {
     for (const n of y.PATTERN_LENGTHS)
       if (e + n <= t.length) {
-        const a = t.slice(e, e + n), i = c[a];
+        const a = t.slice(e, e + n), i = l[a];
         if (i)
           return { pattern: i, length: n };
       }
