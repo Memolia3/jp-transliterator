@@ -98,6 +98,12 @@ describe("Romanizer", () => {
       expect(result).toContainEqual(expected);
     });
 
+    it("子音チェックが正しく行える", () => {
+      const result = romanizer.transliterate("あたしんち");
+      const expected = [["atasinti"], ["a", "ta", "si", "n", "ti"]];
+      expect(result).toContainEqual(expected);
+    });
+
     it("記号を含む文章のローマ字変換が正しく行える", () => {
       const result = romanizer.transliterate(
         "！＠＃＄％＾＆＊（）＿＋－＝｛｝「」：；＇、。・？＜＞"

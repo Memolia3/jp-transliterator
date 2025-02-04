@@ -42,6 +42,14 @@ export default class Romanizer extends BaseTransliterator {
     "tyo",
     "cho",
   ]);
+  private static readonly CONSONANT_CHECK_THROUGH_ROMAN_CHARS = new Set([
+    "a",
+    "i",
+    "u",
+    "e",
+    "o",
+    "n",
+  ]);
 
   private readonly optimizedMap: TransliterationTable = Object.freeze(
     Object.entries(
@@ -113,8 +121,10 @@ export default class Romanizer extends BaseTransliterator {
 
         if (currentPart.length === 1 && hasMatchingConsonant) {
           const consonant = nextPart.charAt(0);
-          if (!currentPart.startsWith(consonant)) {
-            console.log(currentPart, nextPart);
+          if (
+            !currentPart.startsWith(consonant) &&
+            !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(currentPart)
+          ) {
             isValid = false;
             break;
           }
