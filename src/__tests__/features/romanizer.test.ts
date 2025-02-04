@@ -62,6 +62,26 @@ describe("Romanizer", () => {
       expect(result).toContainEqual(expected);
     });
 
+    it("「っ」を含む文章のローマ字変換が正しく行える5", () => {
+      const result =
+        romanizer.transliterate("ちゃっちゅっちょっふぁっふぃっふぉ");
+      const expected = [
+        ["tyattyuttyoffaffiffo"],
+        ["tya", "t", "tyu", "t", "tyo", "f", "fa", "f", "fi", "f", "fo"],
+      ];
+      expect(result).toContainEqual(expected);
+    });
+
+    it("「っ」を含む文章のローマ字変換が正しく行える6", () => {
+      const result =
+        romanizer.transliterate("チャッチュッチョッファッフィッフォ");
+      const expected = [
+        ["tyattyuttyoffaffiffo"],
+        ["tya", "t", "tyu", "t", "tyo", "f", "fa", "f", "fi", "f", "fo"],
+      ];
+      expect(result).toContainEqual(expected);
+    });
+
     it("ハイフンを含む文章のローマ字変換が正しく行える", () => {
       const result = romanizer.transliterate("ー‐-");
       const expected = [["---"], ["-", "-", "-"]];

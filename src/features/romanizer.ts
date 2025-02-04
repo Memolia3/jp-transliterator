@@ -114,7 +114,7 @@ export default class Romanizer extends BaseTransliterator {
           const consonant = nextPart.charAt(0);
           if (!currentPart.startsWith(consonant)) {
             isValid = false;
-            break; // Exit the loop if a mismatch is found
+            break;
           }
         }
       }
@@ -196,22 +196,18 @@ export default class Romanizer extends BaseTransliterator {
   private handleTsu(str: string, i: number, patterns: Pattern): boolean {
     if (!Romanizer.TSU_CHARS.has(str[i])) return false;
 
-    const tsuPattern = this.optimizedMap[str[i]];
     const nextChar = str[i + 1];
     if (nextChar && this.optimizedMap[nextChar]) {
       const nextCharPatterns = this.optimizedMap[nextChar];
       const validPatterns = nextCharPatterns.map((pattern) => {
         const consonant = pattern.charAt(0);
-        if (Romanizer.CONSONANT_TRANS_ROMAN_CHARS.has(pattern)) {
-          return consonant;
-        }
-        return pattern;
+        return consonant;
       });
 
       patterns.push(validPatterns);
       return true;
     }
-    patterns.push(tsuPattern);
+    patterns.push(this.optimizedMap[str[i]]);
     return true;
   }
 
