@@ -82,6 +82,16 @@ describe("Romanizer", () => {
       expect(result).toContainEqual(expected);
     });
 
+    it("「っ」を含む文章のローマ字変換が正しく行える7", () => {
+      const result = romanizer.transliterate("っちゃ");
+      const expected = [
+        [["ccya"], ["c", "cya"]],
+        [["ccha"], ["c", "cha"]],
+        [["ttya"], ["t", "tya"]],
+      ];
+      expect(result).toEqual(expected);
+    });
+
     it("ハイフンを含む文章のローマ字変換が正しく行える", () => {
       const result = romanizer.transliterate("ー‐-");
       const expected = [["---"], ["-", "-", "-"]];

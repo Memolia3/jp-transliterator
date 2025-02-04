@@ -36,6 +36,7 @@ export default class Romanizer extends BaseTransliterator {
     "ji",
     "tya",
     "cha",
+    "cya",
     "tyu",
     "chu",
     "tyo",
@@ -113,6 +114,7 @@ export default class Romanizer extends BaseTransliterator {
         if (currentPart.length === 1 && hasMatchingConsonant) {
           const consonant = nextPart.charAt(0);
           if (!currentPart.startsWith(consonant)) {
+            console.log(currentPart, nextPart);
             isValid = false;
             break;
           }
