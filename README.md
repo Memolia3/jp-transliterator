@@ -12,3 +12,9 @@ Converts romaji to kana characters.<br>
 
 - フレームワークに依存しません。React, Vue等で使用可能です。<br>
 Framework-agnostic, usable with React, Vue, and other frameworks.
+
+## デモ / Demo
+
+- [Vueのデモ / Vue Demo](https://memolia3.github.io/jp-transliterator/)
+
+
