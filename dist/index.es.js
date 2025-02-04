@@ -243,13 +243,13 @@ const C = {
   "っ|ッ": ["xtu", "xtsu", "ltu", "ltsu"],
   "ゎ|ヮ": ["xwa", "lwa"]
 }, l = {};
-for (const [w, t] of Object.entries(C)) {
-  const [e, n] = w.split("|");
+for (const [A, t] of Object.entries(C)) {
+  const [e, n] = A.split("|");
   t.forEach((a) => {
     l[a] ? (l[a].includes(e) || l[a].push(e), l[a].includes(n) || l[a].push(n)) : l[a] = [e, n];
   });
 }
-class m {
+class N {
   constructor() {
     this.convertedStr = [], this.combinations = [];
   }
@@ -266,7 +266,7 @@ class m {
     return n;
   }
 }
-const u = class u extends m {
+const u = class u extends N {
   constructor() {
     super(...arguments), this.optimizedMap = Object.freeze(
       Object.entries(
@@ -310,8 +310,8 @@ const u = class u extends m {
         const r = i[o], f = i[o + 1], c = u.CONSONANT_TRANS_ROMAN_CHARS.has(f);
         if (r.length === 1 && c) {
           const g = f.charAt(0);
-          if (!r.startsWith(g)) {
-            console.log(r, f), h = !1;
+          if (!r.startsWith(g) && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(r)) {
+            h = !1;
             break;
           }
         }
@@ -426,9 +426,16 @@ u.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "chu",
   "tyo",
   "cho"
+]), u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS = /* @__PURE__ */ new Set([
+  "a",
+  "i",
+  "u",
+  "e",
+  "o",
+  "n"
 ]);
-let A = u;
-const y = class y extends m {
+let S = u;
+const y = class y extends N {
   /**
    * ローマ字 → かな・カナ変換
    * @param str 変換対象文字列
@@ -551,8 +558,8 @@ y.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "y",
   "z"
 ]), y.PATTERN_LENGTHS = [4, 3, 2, 1];
-let S = y;
+let w = y;
 export {
-  S as Japanizer,
-  A as Romanizer
+  w as Japanizer,
+  S as Romanizer
 };
