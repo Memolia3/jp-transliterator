@@ -27,21 +27,6 @@ export default class Romanizer extends BaseTransliterator {
 
   private static readonly N_CHARS = new Set(["ん", "ン"]);
   private static readonly TSU_CHARS = new Set(["っ", "ッ"]);
-  private static readonly CONSONANT_TRANS_ROMAN_CHARS = new Set([
-    "ti",
-    "chi",
-    "hu",
-    "fu",
-    "zi",
-    "ji",
-    "tya",
-    "cha",
-    "cya",
-    "tyu",
-    "chu",
-    "tyo",
-    "cho",
-  ]);
   private static readonly CONSONANT_CHECK_THROUGH_ROMAN_CHARS = new Set([
     "a",
     "i",
@@ -73,11 +58,10 @@ export default class Romanizer extends BaseTransliterator {
    */
   public override transliterate(
     str: string,
-    chunkSize: number = 100
   ): Combinations | null | { error: string } {
     if (!str?.length) return null;
     try {
-      const chunks = this.splitIntoChunks(str, chunkSize);
+      const chunks = this.splitIntoChunks(str, 0);
       let finalResults: Combinations = [];
       for (const chunk of chunks) {
         const convertedChunk = Convert.toHalfWidth(chunk);
@@ -87,7 +71,7 @@ export default class Romanizer extends BaseTransliterator {
         let combinations = this.generateAllCombinations(patternArray);
         if (combinations.length === 0) {
           // フォールバック: 各パターンの先頭候補を使用
-          const fallbackParts = patternArray.map(pat => pat[0]);
+          const fallbackParts = patternArray.map((pat) => pat[0]);
           const fallbackRomaji = fallbackParts.join("");
           combinations.push([[fallbackRomaji], fallbackParts]);
         }
@@ -105,42 +89,10 @@ export default class Romanizer extends BaseTransliterator {
       return finalResults.length ? finalResults : null;
     } catch (e) {
       return {
-        error: `変換エラーが発生しました: ${e instanceof Error ? e.message : String(e)}`,
+        error: `変換エラーが発生しました: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
       };
-    }
-  }
-
-  /**
-   * チャンク処理の結果を合成
-   */
-  private mergeResults(target: Combinations, source: Combinations): void {
-    for (const combination of source) {
-      const [romaji, parts] = combination;
-
-      // 子音チェック
-      let isValid = true;
-      for (let j = 0; j < parts.length - 1; j++) {
-        const currentPart = parts[j];
-        const nextPart = parts[j + 1];
-
-        const hasMatchingConsonant =
-          Romanizer.CONSONANT_TRANS_ROMAN_CHARS.has(nextPart);
-
-        if (currentPart.length === 1 && hasMatchingConsonant) {
-          const consonant = nextPart.charAt(0);
-          if (
-            !currentPart.startsWith(consonant) &&
-            !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(currentPart)
-          ) {
-            isValid = false;
-            break;
-          }
-        }
-      }
-
-      if (isValid) {
-        target.push([romaji, parts]);
-      }
     }
   }
 
@@ -177,8 +129,14 @@ export default class Romanizer extends BaseTransliterator {
       }
 
       // 通常文字の処理
-      const pattern = this.optimizedMap[str[i]];
-      patterns.push(pattern || [str[i]]);
+      const char = str[i];
+      const mapping = this.optimizedMap[char];
+      // mapping が undefined または空配列なら必ずフォールバック候補配列を返す
+      if (mapping === undefined || mapping.length === 0) {
+        patterns.push([char]);
+      } else {
+        patterns.push(mapping);
+      }
       i++;
     }
 
@@ -262,7 +220,6 @@ export default class Romanizer extends BaseTransliterator {
 
       for (const { current, parts, index } of currentBatch) {
         if (index === patterns.length) {
-
           if (this.isValidConsonantCombination(parts)) {
             results.push([[current.join("")], parts]);
           }
@@ -275,16 +232,18 @@ export default class Romanizer extends BaseTransliterator {
           if (nextBatch.length < MAX_BATCH_SIZE) {
             const newCurrent = current.concat(char);
             const newParts = parts.concat(char);
-            
+
             if (parts.length > 0) {
               const lastPart = parts[parts.length - 1];
-              if (lastPart.length === 1 && 
-                  !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(lastPart) &&
-                  !char.startsWith(lastPart)) {
+              if (
+                lastPart.length === 1 &&
+                !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(lastPart) &&
+                !char.startsWith(lastPart)
+              ) {
                 continue; // 無効な子音の組み合わせをスキップ
               }
             }
-            
+
             nextBatch.push({
               current: newCurrent,
               parts: newParts,
@@ -308,8 +267,10 @@ export default class Romanizer extends BaseTransliterator {
       const currentPart = parts[i];
       const nextPart = parts[i + 1];
 
-      if (currentPart.length === 1 && 
-          !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(currentPart)) {
+      if (
+        currentPart.length === 1 &&
+        !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(currentPart)
+      ) {
         if (!nextPart.startsWith(currentPart)) {
           return false;
         }
@@ -336,5 +297,14 @@ export default class Romanizer extends BaseTransliterator {
       }
     }
     return newResults;
+  }
+
+  /**
+   * 入力文字列をチャンク分割します。
+   * @param str 変換対象文字列
+   * @returns チャンクの配列
+   */
+  protected override splitIntoChunks(str: string, size: number): string[] {
+    return str.split(/(?<=[、。])/);
   }
 }

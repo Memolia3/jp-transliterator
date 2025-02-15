@@ -356,6 +356,33 @@ describe("Romanizer", () => {
     });
   });
 
+  describe("「、」「。」が含まれる文章のローマ字変換", () => {
+    it("入力「こんにちは、こん。にちは」の変換結果に期待値が含まれる", () => {
+      const romanizer = new Romanizer();
+      const input = "こんにちは、こん。に";
+
+      const expectedCombination = [
+        [
+          ["konnnichiha,kon.ni"],
+          [
+            "ko",
+            "nn",
+            "ni",
+            "chi",
+            "ha",
+            ",",
+            "ko",
+            "n",
+            ".",
+            "ni",
+          ],
+        ],
+      ];
+      const result = romanizer.transliterate(input);
+      expect(result).toContainEqual(expectedCombination);
+    });
+  });
+
   describe("並列処理テスト", () => {
     it("非同期で並行処理をテスト", async () => {
       const romanizer = new Romanizer();
