@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Romanizer テスト</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 2em;
+      }
+      input[type="text"] {
+        width: 90%;
+      }
+      pre {
+        background: #f3f3f3;
+        padding: 1em;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Romanizer テスト</h1>
+    <p>
+      テスト用文章：
+      <input
+        type="text"
+        id="inputText"
+        value="このしろがくずれたとき、じだいがかわる。"
+      />
+    </p>
+    <button id="convertBtn">変換する</button>
+    <h2>変換結果</h2>
+    <pre id="resultOutput"></pre>
+
+    <script type="module">
+      // ※ ビルド後のディレクトリ構造に合わせてパスを調整してください
+      import Romanizer from "./dist/features/romanizer.js";
+
+      const romanizer = new Romanizer();
+      const inputElem = document.getElementById("inputText");
+      const btn = document.getElementById("convertBtn");
+      const outputElem = document.getElementById("resultOutput");
+
+      function convertText() {
+        const inputText = inputElem.value;
+        const result = romanizer.transliterate(inputText);
+        outputElem.textContent = JSON.stringify(result, null, 2);
+      }
+
+      btn.addEventListener("click", convertText);
+
+      // ページ読み込み時にも変換結果を更新する
+      convertText();
+    </script>
+  </body>
+</html>

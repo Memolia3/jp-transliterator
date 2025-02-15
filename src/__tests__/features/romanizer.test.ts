@@ -143,6 +143,12 @@ describe("Romanizer", () => {
       expect(result).toContainEqual(expected);
     });
 
+    it("文章を正しく返す2", () => {
+      const result = romanizer.transliterate("このしろがくずれたとき、じだいがかわる。");
+      console.log("Romanizer result:", JSON.stringify(result, null, 2));
+      expect(result).toMatchSnapshot();
+    });
+
     describe("５０音のローマ字変換", () => {
       it("あ行のローマ字変換が正しく行える", () => {
         const result = romanizer.transliterate("あいうえお");
@@ -357,29 +363,11 @@ describe("Romanizer", () => {
   });
 
   describe("「、」「。」が含まれる文章のローマ字変換", () => {
-    it("入力「こんにちは、こん。にちは」の変換結果に期待値が含まれる", () => {
+    it("入力「こんにちは、こん。にちは」の変換結果をスナップショットとして確認する", () => {
       const romanizer = new Romanizer();
       const input = "こんにちは、こん。に";
-
-      const expectedCombination = [
-        [
-          ["konnnichiha,kon.ni"],
-          [
-            "ko",
-            "nn",
-            "ni",
-            "chi",
-            "ha",
-            ",",
-            "ko",
-            "n",
-            ".",
-            "ni",
-          ],
-        ],
-      ];
       const result = romanizer.transliterate(input);
-      expect(result).toContainEqual(expectedCombination);
+      expect(result).toMatchSnapshot();
     });
   });
 
