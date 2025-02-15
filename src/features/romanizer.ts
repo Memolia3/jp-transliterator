@@ -54,7 +54,6 @@ export default class Romanizer extends BaseTransliterator {
    * かな・カナ → ローマ字変換
    * 長文の場合には入力文字列をチャンク分割し、各チャンクの結果を直積（Cartesian product）で合成します。
    * @param str 変換対象文字列
-   * @param chunkSize チャンクサイズ (デフォルトは100文字)
    */
   public override transliterate(
     str: string,
