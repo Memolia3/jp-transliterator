@@ -1,4 +1,4 @@
-const s = class s {
+const h = class h {
   /**
    * 全角文字を半角に変換
    * @param str 変換対象文字列
@@ -6,11 +6,11 @@ const s = class s {
    */
   static toHalfWidth(t) {
     return t != null && t.length ? t.replace(
-      s.FULL_TO_HALF_REGEX,
+      h.FULL_TO_HALF_REGEX,
       (e) => String.fromCharCode(e.charCodeAt(0) - 65248)
     ).replace(
-      s.FULL_SYMBOLS_REGEX,
-      (e) => s.fullToHalfMap[e] || e
+      h.FULL_SYMBOLS_REGEX,
+      (e) => h.fullToHalfMap[e] || e
     ) : t;
   }
   /**
@@ -20,15 +20,15 @@ const s = class s {
    */
   static toFullWidth(t) {
     return t != null && t.length ? t.replace(
-      s.HALF_TO_FULL_REGEX,
+      h.HALF_TO_FULL_REGEX,
       (e) => String.fromCharCode(e.charCodeAt(0) + 65248)
     ).replace(
-      s.HALF_SYMBOLS_REGEX,
-      (e) => s.halfToFullMap[e] || e
+      h.HALF_SYMBOLS_REGEX,
+      (e) => h.halfToFullMap[e] || e
     ) : t;
   }
 };
-s.FULL_TO_HALF_REGEX = /[Ａ-Ｚａ-ｚ０-９！-～]/g, s.HALF_TO_FULL_REGEX = /[A-Za-z0-9!-~]/g, s.FULL_SYMBOLS_REGEX = /[、。・ーー「」‐]/g, s.HALF_SYMBOLS_REGEX = /[，．／［］]/g, s.fullToHalfMap = Object.freeze({
+h.FULL_TO_HALF_REGEX = /[Ａ-Ｚａ-ｚ０-９！-～]/g, h.HALF_TO_FULL_REGEX = /[A-Za-z0-9!-~]/g, h.FULL_SYMBOLS_REGEX = /[、。・ーー「」‐]/g, h.HALF_SYMBOLS_REGEX = /[，．／［］]/g, h.fullToHalfMap = Object.freeze({
   "、": ",",
   "。": ".",
   "・": "/",
@@ -36,15 +36,15 @@ s.FULL_TO_HALF_REGEX = /[Ａ-Ｚａ-ｚ０-９！-～]/g, s.HALF_TO_FULL_REGEX =
   "‐": "-",
   "「": "[",
   "」": "]"
-}), s.halfToFullMap = Object.freeze({
+}), h.halfToFullMap = Object.freeze({
   "，": "、",
   "．": "。",
   "／": "・",
   "［": "「",
   "］": "」"
 });
-let p = s;
-const C = {
+let y = h;
+const w = {
   "あ|ア": ["a"],
   "い|イ": ["i", "yi"],
   "う|ウ": ["u", "wu", "whu"],
@@ -242,14 +242,14 @@ const C = {
   "ゔょ|ヴョ": ["vyo"],
   "っ|ッ": ["xtu", "xtsu", "ltu", "ltsu"],
   "ゎ|ヮ": ["xwa", "lwa"]
-}, l = {};
-for (const [A, t] of Object.entries(C)) {
-  const [e, n] = A.split("|");
+}, r = {};
+for (const [d, t] of Object.entries(w)) {
+  const [e, n] = d.split("|");
   t.forEach((a) => {
-    l[a] ? (l[a].includes(e) || l[a].push(e), l[a].includes(n) || l[a].push(n)) : l[a] = [e, n];
+    r[a] ? (r[a].includes(e) || r[a].push(e), r[a].includes(n) || r[a].push(n)) : r[a] = [e, n];
   });
 }
-class N {
+class S {
   constructor() {
     this.convertedStr = [], this.combinations = [];
   }
@@ -266,11 +266,11 @@ class N {
     return n;
   }
 }
-const u = class u extends N {
+const u = class u extends S {
   constructor() {
     super(...arguments), this.optimizedMap = Object.freeze(
       Object.entries(
-        C
+        w
       ).reduce((t, [e, n]) => (e.split("|").forEach((a) => {
         t[a] = n;
       }), t), {})
@@ -278,45 +278,30 @@ const u = class u extends N {
   }
   /**
    * かな・カナ → ローマ字変換
+   * 長文の場合には入力文字列をチャンク分割し、各チャンクの結果を直積（Cartesian product）で合成します。
    * @param str 変換対象文字列
-   * @param chunkSize チャンクサイズ
+   * @param chunkSize チャンクサイズ (デフォルトは100文字)
    */
-  transliterate(t, e = 100) {
+  transliterate(t) {
     if (!(t != null && t.length)) return null;
     try {
-      const n = this.splitIntoChunks(t, e);
-      let a = [];
-      for (const i of n) {
-        const h = p.toHalfWidth(i), o = this.generatePatternArray(h);
-        if (!o.length) continue;
-        const r = this.generateAllCombinations(o);
-        this.mergeResults(a, r), this.patternCache.size > this.MAX_CACHE_SIZE && this.patternCache.clear();
-      }
-      return a.length ? a : null;
-    } catch (n) {
-      return {
-        error: `変換エラーが発生しました: ${n instanceof Error ? n.message : String(n)}`
-      };
-    }
-  }
-  /**
-   * チャンク処理の結果を合成
-   */
-  mergeResults(t, e) {
-    for (const n of e) {
-      const [a, i] = n;
-      let h = !0;
-      for (let o = 0; o < i.length - 1; o++) {
-        const r = i[o], f = i[o + 1], c = u.CONSONANT_TRANS_ROMAN_CHARS.has(f);
-        if (r.length === 1 && c) {
-          const g = f.charAt(0);
-          if (!r.startsWith(g) && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(r)) {
-            h = !1;
-            break;
-          }
+      const e = this.splitIntoChunks(t, 0);
+      let n = [];
+      for (const a of e) {
+        const o = y.toHalfWidth(a), s = this.generatePatternArray(o);
+        if (!s.length) continue;
+        let i = this.generateAllCombinations(s);
+        if (i.length === 0) {
+          const c = s.map((p) => p[0]), f = c.join("");
+          i.push([[f], c]);
         }
+        n.length === 0 ? n = i : n = this.combineCartesian(n, i), this.patternCache.size > this.MAX_CACHE_SIZE && this.patternCache.clear();
       }
-      h && t.push([a, i]);
+      return n.length ? n : null;
+    } catch (e) {
+      return {
+        error: `変換エラーが発生しました: ${e instanceof Error ? e.message : String(e)}`
+      };
     }
   }
   /**
@@ -336,13 +321,13 @@ const u = class u extends N {
         a++;
         continue;
       }
-      const i = this.handleYoon(t, a);
-      if (i) {
-        n.push(i.pattern), a += i.length;
+      const o = this.handleYoon(t, a);
+      if (o) {
+        n.push(o.pattern), a += o.length;
         continue;
       }
-      const h = this.optimizedMap[t[a]];
-      n.push(h || [t[a]]), a++;
+      const s = t[a], i = this.optimizedMap[s];
+      i === void 0 || i.length === 0 ? n.push([s]) : n.push(i), a++;
     }
     return t.length <= 10 && this.patternCache.set(t, n), n;
   }
@@ -359,8 +344,8 @@ const u = class u extends N {
     if (!u.TSU_CHARS.has(t[e])) return !1;
     const a = t[e + 1];
     if (a && this.optimizedMap[a]) {
-      const h = this.optimizedMap[a].map((o) => o.charAt(0));
-      return n.push(h), !0;
+      const s = this.optimizedMap[a].map((i) => i.charAt(0));
+      return n.push(s), !0;
     }
     return n.push(this.optimizedMap[t[e]]), !0;
   }
@@ -377,28 +362,65 @@ const u = class u extends N {
    */
   generateAllCombinations(t) {
     const e = [];
-    let n = [{ current: [], parts: [], index: 0 }];
-    for (; n.length > 0; ) {
-      const a = [];
-      for (const { current: i, parts: h, index: o } of n) {
-        if (o === t.length) {
-          e.push([[i.join("")], h]);
+    let a = [{ current: [], parts: [], index: 0 }];
+    for (; a.length > 0; ) {
+      const o = [];
+      for (const { current: s, parts: i, index: c } of a) {
+        if (c === t.length) {
+          this.isValidConsonantCombination(i) && e.push([[s.join("")], i]);
           continue;
         }
-        const f = t[o].reduce((c, g) => {
-          const d = g.length;
-          return c[d] = c[d] || [], c[d].push(g), c;
-        }, []).flat();
-        for (const c of f)
-          a.push({
-            current: i.concat(c),
-            parts: h.concat(c),
-            index: o + 1
-          });
+        const f = t[c];
+        for (const p of f)
+          if (o.length < 1e4) {
+            const m = s.concat(p), H = i.concat(p);
+            if (i.length > 0) {
+              const g = i[i.length - 1];
+              if (g.length === 1 && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(g) && !p.startsWith(g))
+                continue;
+            }
+            o.push({
+              current: m,
+              parts: H,
+              index: c + 1
+            });
+          }
       }
-      n = a;
+      a = o;
     }
     return e;
+  }
+  /**
+   * 子音の組み合わせが有効かチェック
+   */
+  isValidConsonantCombination(t) {
+    for (let e = 0; e < t.length - 1; e++) {
+      const n = t[e], a = t[e + 1];
+      if (n.length === 1 && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(n) && !a.startsWith(n))
+        return !1;
+    }
+    return !0;
+  }
+  /**
+   * 与えられた2つの変換候補のセットの直積を返すヘルパーメソッド
+   * 各候補は [ [romaji文字列], parts ] の形式。
+   */
+  combineCartesian(t, e) {
+    const n = [];
+    for (const a of t)
+      for (const o of e) {
+        const s = [a[0][0] + o[0][0]], i = a[1].concat(o[1]);
+        n.push([s, i]);
+      }
+    return n;
+  }
+  /**
+   * 入力文字列をチャンク分割します。
+   * @param str 変換対象文字列
+   * @returns チャンクの配列
+   */
+  splitIntoChunks(t, e) {
+    return t.split(new RegExp("(?<=[、。])"));
   }
 };
 u.NA_LINE_CHARS = /* @__PURE__ */ new Set([
@@ -412,21 +434,7 @@ u.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "ヌ",
   "ネ",
   "ノ"
-]), u.N_CHARS = /* @__PURE__ */ new Set(["ん", "ン"]), u.TSU_CHARS = /* @__PURE__ */ new Set(["っ", "ッ"]), u.CONSONANT_TRANS_ROMAN_CHARS = /* @__PURE__ */ new Set([
-  "ti",
-  "chi",
-  "hu",
-  "fu",
-  "zi",
-  "ji",
-  "tya",
-  "cha",
-  "cya",
-  "tyu",
-  "chu",
-  "tyo",
-  "cho"
-]), u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS = /* @__PURE__ */ new Set([
+]), u.N_CHARS = /* @__PURE__ */ new Set(["ん", "ン"]), u.TSU_CHARS = /* @__PURE__ */ new Set(["っ", "ッ"]), u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS = /* @__PURE__ */ new Set([
   "a",
   "i",
   "u",
@@ -434,8 +442,8 @@ u.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "o",
   "n"
 ]);
-let S = u;
-const y = class y extends N {
+let C = u;
+const l = class l extends S {
   /**
    * ローマ字 → かな・カナ変換
    * @param str 変換対象文字列
@@ -445,10 +453,10 @@ const y = class y extends N {
     if (!(t != null && t.length)) return null;
     try {
       const n = this.splitIntoChunks(t, e), a = [];
-      for (const i of n) {
-        const h = p.toHalfWidth(i), o = this.generatePatternArray(h);
-        if (!o.length) continue;
-        const r = this.generateAllCombinations(o), f = this.transformCombination(r);
+      for (const o of n) {
+        const s = y.toHalfWidth(o), i = this.generatePatternArray(s);
+        if (!i.length) continue;
+        const c = this.generateAllCombinations(i), f = this.transformCombination(c);
         a.push(f);
       }
       return a.length ? this.mergeResults(a) : null;
@@ -495,23 +503,23 @@ const y = class y extends N {
    * 「ん」の特殊処理
    */
   handleSpecialN(t, e, n) {
-    return t[e] === "n" && e + 1 < t.length && y.NA_LINE_CHARS.has(t.slice(e + 1, e + 3)) ? (n.push(l.n), !0) : !1;
+    return t[e] === "n" && e + 1 < t.length && l.NA_LINE_CHARS.has(t.slice(e + 1, e + 3)) ? (n.push(r.n), !0) : !1;
   }
   /**
    * 促音の処理
    */
   handleDoubleConsonant(t, e, n) {
-    return e + 1 < t.length && t[e] === t[e + 1] && y.CONSONANTS.has(t[e]) ? (n.push(l.xtu), !0) : !1;
+    return e + 1 < t.length && t[e] === t[e + 1] && l.CONSONANTS.has(t[e]) ? (n.push(r.xtu), !0) : !1;
   }
   /**
    * パターンマッチング
    */
   matchPattern(t, e) {
-    for (const n of y.PATTERN_LENGTHS)
+    for (const n of l.PATTERN_LENGTHS)
       if (e + n <= t.length) {
-        const a = t.slice(e, e + n), i = l[a];
-        if (i)
-          return { pattern: i, length: n };
+        const a = t.slice(e, e + n), o = r[a];
+        if (o)
+          return { pattern: o, length: n };
       }
     return null;
   }
@@ -520,7 +528,7 @@ const y = class y extends N {
    */
   generateAllCombinations(t) {
     const e = t.map((a) => a[0]).join(""), n = t.map((a) => a[1]).join("");
-    return [[[p.toFullWidth(e)], [p.toFullWidth(n)]]];
+    return [[[y.toFullWidth(e)], [y.toFullWidth(n)]]];
   }
   /**
    * コンビネーション変換
@@ -530,13 +538,13 @@ const y = class y extends N {
     return [e, n];
   }
 };
-y.NA_LINE_CHARS = /* @__PURE__ */ new Set([
+l.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "na",
   "ni",
   "nu",
   "ne",
   "no"
-]), y.CONSONANTS = /* @__PURE__ */ new Set([
+]), l.CONSONANTS = /* @__PURE__ */ new Set([
   "b",
   "c",
   "d",
@@ -557,9 +565,9 @@ y.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "x",
   "y",
   "z"
-]), y.PATTERN_LENGTHS = [4, 3, 2, 1];
-let w = y;
+]), l.PATTERN_LENGTHS = [4, 3, 2, 1];
+let A = l;
 export {
-  w as Japanizer,
-  S as Romanizer
+  A as Japanizer,
+  C as Romanizer
 };
