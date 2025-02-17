@@ -372,7 +372,7 @@ const u = class u extends S {
         const f = t[c];
         for (const p of f)
           if (o.length < 1e4) {
-            const m = s.concat(p), H = i.concat(p);
+            const m = s.concat(p), N = i.concat(p);
             if (i.length > 0) {
               const g = i[i.length - 1];
               if (g.length === 1 && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(g) && !p.startsWith(g))
@@ -380,7 +380,7 @@ const u = class u extends S {
             }
             o.push({
               current: m,
-              parts: H,
+              parts: N,
               index: c + 1
             });
           }
@@ -395,7 +395,7 @@ const u = class u extends S {
   isValidConsonantCombination(t) {
     for (let e = 0; e < t.length - 1; e++) {
       const n = t[e], a = t[e + 1];
-      if (n.length === 1 && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(n) && !a.startsWith(n))
+      if (isNaN(Number(n)) && n.length === 1 && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(n) && !a.startsWith(n))
         return !1;
     }
     return !0;

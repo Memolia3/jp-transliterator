@@ -266,6 +266,11 @@ export default class Romanizer extends BaseTransliterator {
       const currentPart = parts[i];
       const nextPart = parts[i + 1];
 
+      // 数字の場合はチェックをスキップしてすべての入力パターンを保持する
+      if (!isNaN(Number(currentPart))) {
+        continue;
+      }
+
       if (
         currentPart.length === 1 &&
         !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(currentPart)
