@@ -35,6 +35,18 @@ export default class Romanizer extends BaseTransliterator {
     "o",
     "n",
   ]);
+  private static readonly DIGIT_CHECK_THROUGH_ROMAN_CHARS = new Set([
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+  ]);
 
   private readonly optimizedMap: TransliterationTable = Object.freeze(
     Object.entries(
@@ -266,11 +278,6 @@ export default class Romanizer extends BaseTransliterator {
       const currentPart = parts[i];
       const nextPart = parts[i + 1];
 
-      // 数字の場合はチェックをスキップしてすべての入力パターンを保持する
-      if (!isNaN(Number(currentPart))) {
-        continue;
-      }
-
       if (
         currentPart.length === 1 &&
         !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(currentPart)
@@ -294,8 +301,13 @@ export default class Romanizer extends BaseTransliterator {
     const newResults: Combinations = [];
     for (const res1 of results1) {
       for (const res2 of results2) {
-        // resX は [[romaji], parts] の形式。ここでromajiは1文字列のみを保持します。
-        const combinedRomaji = [res1[0][0] + res2[0][0]];
+        const combinedRomaji: string[] = [];
+        // 各候補配列内の全候補を組み合わせる
+        for (const romaji1 of res1[0]) {
+          for (const romaji2 of res2[0]) {
+            combinedRomaji.push(romaji1 + romaji2);
+          }
+        }
         const combinedParts = res1[1].concat(res2[1]);
         newResults.push([combinedRomaji, combinedParts]);
       }
@@ -309,6 +321,7 @@ export default class Romanizer extends BaseTransliterator {
    * @returns チャンクの配列
    */
   protected override splitIntoChunks(str: string, size: number): string[] {
-    return str.split(/(?<=[、。])/);
+    // 「、」「。」の直後、および数字と非数字の境界でチャンク分割する
+    return str.split(/(?<=[、。])|(?<=\d)(?=\D)|(?<=\D)(?=\d)/);
   }
 }

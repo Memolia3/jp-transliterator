@@ -143,9 +143,39 @@ describe("Romanizer", () => {
       expect(result).toContainEqual(expected);
     });
 
+    it("数字の連続した文章を正しく変換できる", () => {
+      const result = romanizer.transliterate("こんにちは234567890たちつてと");
+      const expected = [
+        ["konnnitiha234567890tachitsuteto"],
+        [
+          "ko",
+          "nn",
+          "ni",
+          "ti",
+          "ha",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "0",
+          "ta",
+          "chi",
+          "tsu",
+          "te",
+          "to",
+        ],
+      ];
+      expect(result).toContainEqual(expected);
+    });
+
     it("文章を正しく返す2", () => {
-      const result = romanizer.transliterate("このしろがくずれたとき、じだいがかわる。");
-      console.log("Romanizer result:", JSON.stringify(result, null, 2));
+      const result = romanizer.transliterate(
+        "このしろがくずれたとき、じだいがかわる。"
+      );
       expect(result).toMatchSnapshot();
     });
 
