@@ -243,8 +243,8 @@ const w = {
   "っ|ッ": ["xtu", "xtsu", "ltu", "ltsu"],
   "ゎ|ヮ": ["xwa", "lwa"]
 }, r = {};
-for (const [g, t] of Object.entries(w)) {
-  const [e, n] = g.split("|");
+for (const [d, t] of Object.entries(w)) {
+  const [e, n] = d.split("|");
   t.forEach((a) => {
     r[a] ? (r[a].includes(e) || r[a].push(e), r[a].includes(n) || r[a].push(n)) : r[a] = [e, n];
   });
@@ -374,8 +374,8 @@ const u = class u extends S {
           if (o.length < 1e4) {
             const m = s.concat(p), H = i.concat(p);
             if (i.length > 0) {
-              const d = i[i.length - 1];
-              if (d.length === 1 && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(d) && !p.startsWith(d))
+              const g = i[i.length - 1];
+              if (g.length === 1 && !u.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(g) && !p.startsWith(g))
                 continue;
             }
             o.push({
@@ -423,7 +423,9 @@ const u = class u extends S {
    * @returns チャンクの配列
    */
   splitIntoChunks(t, e) {
-    return t.split(new RegExp("(?<=[、。])|(?<=\\d)(?=\\D)|(?<=\\D)(?=\\d)"));
+    return t.split(
+      new RegExp("(?<=[、。])|(?<=[0-9\\uFF10-\\uFF19])(?=[^0-9\\uFF10-\\uFF19])|(?<=[^0-9\\uFF10-\\uFF19])(?=[0-9\\uFF10-\\uFF19])")
+    );
   }
 };
 u.NA_LINE_CHARS = /* @__PURE__ */ new Set([
