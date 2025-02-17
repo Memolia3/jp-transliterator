@@ -68,7 +68,7 @@ export default class Romanizer extends BaseTransliterator {
    * @param str 変換対象文字列
    */
   public override transliterate(
-    str: string,
+    str: string
   ): Combinations | null | { error: string } {
     if (!str?.length) return null;
     try {
@@ -322,6 +322,8 @@ export default class Romanizer extends BaseTransliterator {
    */
   protected override splitIntoChunks(str: string, size: number): string[] {
     // 「、」「。」の直後、および数字と非数字の境界でチャンク分割する
-    return str.split(/(?<=[、。])|(?<=\d)(?=\D)|(?<=\D)(?=\d)/);
+    return str.split(
+      /(?<=[、。])|(?<=[0-9\uFF10-\uFF19])(?=[^0-9\uFF10-\uFF19])|(?<=[^0-9\uFF10-\uFF19])(?=[0-9\uFF10-\uFF19])/
+    );
   }
 }
