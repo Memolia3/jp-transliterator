@@ -321,9 +321,9 @@ export default class Romanizer extends BaseTransliterator {
    * @returns チャンクの配列
    */
   protected override splitIntoChunks(str: string, size: number): string[] {
-    // 「、」「。」の直後、および数字と非数字の境界でチャンク分割する
+    // 記号および数字と非数字の境界でチャンク分割する
     return str.split(
-      /(?<=[、。])|(?<=[0-9\uFF10-\uFF19])(?=[^0-9\uFF10-\uFF19])|(?<=[^0-9\uFF10-\uFF19])(?=[0-9\uFF10-\uFF19])/
+      /(?<=[、。・ー‐「」『』])|(?<=[0-9\uFF10-\uFF19])(?=[^0-9\uFF10-\uFF19])|(?<=[^0-9\uFF10-\uFF19])(?=[0-9\uFF10-\uFF19])/
     );
   }
 }

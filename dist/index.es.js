@@ -424,7 +424,7 @@ const u = class u extends S {
    */
   splitIntoChunks(t, e) {
     return t.split(
-      new RegExp("(?<=[、。])|(?<=[0-9\\uFF10-\\uFF19])(?=[^0-9\\uFF10-\\uFF19])|(?<=[^0-9\\uFF10-\\uFF19])(?=[0-9\\uFF10-\\uFF19])")
+      new RegExp("(?<=[、。・ー‐「」『』])|(?<=[0-9\\uFF10-\\uFF19])(?=[^0-9\\uFF10-\\uFF19])|(?<=[^0-9\\uFF10-\\uFF19])(?=[0-9\\uFF10-\\uFF19])")
     );
   }
 };

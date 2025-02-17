@@ -172,6 +172,12 @@ describe("Romanizer", () => {
       expect(result).toContainEqual(expected);
     });
 
+    it("長音を含む文章を正しく変換できる", () => {
+      const result = romanizer.transliterate("スイーツ");
+      const expected = [["sui-tsu"], ["su", "i", "-", "tsu"]];
+      expect(result).toContainEqual(expected);
+    });
+
     it("文章を正しく返す2", () => {
       const result = romanizer.transliterate(
         "このしろがくずれたとき、じだいがかわる。"
