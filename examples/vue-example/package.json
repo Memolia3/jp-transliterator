@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "jp-transliterator": "^1.0.19",
+    "jp-transliterator": "^1.0.21",
     "scss": "^0.2.4",
     "vue": "^3.5.13"
   },
