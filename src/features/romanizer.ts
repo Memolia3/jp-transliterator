@@ -323,7 +323,7 @@ export default class Romanizer extends BaseTransliterator {
   protected override splitIntoChunks(str: string, size: number): string[] {
     // 記号および数字と非数字の境界でチャンク分割する
     return str.split(
-      /(?<=[、。・ー‐「」『』])|(?<=[0-9\uFF10-\uFF19])(?=[^0-9\uFF10-\uFF19])|(?<=[^0-9\uFF10-\uFF19])(?=[0-9\uFF10-\uFF19])/
+      /(?<=[、。・ー‐「」『』？！?!])|(?<=[0-9\uFF10-\uFF19])(?=[^0-9\uFF10-\uFF19])|(?<=[^0-9\uFF10-\uFF19])(?=[0-9\uFF10-\uFF19])/
     );
   }
 }

@@ -185,6 +185,58 @@ describe("Romanizer", () => {
       expect(result).toMatchSnapshot();
     });
 
+    it("！を含む文章を正しく返す", () => {
+      const result =
+        romanizer.transliterate("おはよう！きょうはいいてんきだね");
+      const expected = [
+        ["ohayowu!kyouhaiitenkidane"],
+        [
+          "o",
+          "ha",
+          "yo",
+          "wu",
+          "!",
+          "kyo",
+          "u",
+          "ha",
+          "i",
+          "i",
+          "te",
+          "n",
+          "ki",
+          "da",
+          "ne",
+        ],
+      ];
+      expect(result).toContainEqual(expected);
+    });
+
+    it("？を含む文章を正しく返す", () => {
+      const result =
+        romanizer.transliterate("おはよう？きょうはいいてんきだね");
+      const expected = [
+        ["ohayowu?kyouhaiitenkidane"],
+        [
+          "o",
+          "ha",
+          "yo",
+          "wu",
+          "?",
+          "kyo",
+          "u",
+          "ha",
+          "i",
+          "i",
+          "te",
+          "n",
+          "ki",
+          "da",
+          "ne",
+        ],
+      ];
+      expect(result).toContainEqual(expected);
+    });
+
     describe("５０音のローマ字変換", () => {
       it("あ行のローマ字変換が正しく行える", () => {
         const result = romanizer.transliterate("あいうえお");
