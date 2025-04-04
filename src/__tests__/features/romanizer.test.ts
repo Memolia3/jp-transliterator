@@ -63,31 +63,23 @@ describe("Romanizer", () => {
     });
 
     it("「っ」を含む文章のローマ字変換が正しく行える5", () => {
-      const result =
-        romanizer.transliterate("ちゃっちゅっちょっふぁっふぃっふぉ");
-      const expected = [
-        ["tyattyuttyoffaffiffo"],
-        ["tya", "t", "tyu", "t", "tyo", "f", "fa", "f", "fi", "f", "fo"],
-      ];
-      expect(result).toContainEqual(expected);
-    });
-
-    it("「っ」を含む文章のローマ字変換が正しく行える6", () => {
-      const result =
-        romanizer.transliterate("チャッチュッチョッファッフィッフォ");
-      const expected = [
-        ["tyattyuttyoffaffiffo"],
-        ["tya", "t", "tyu", "t", "tyo", "f", "fa", "f", "fi", "f", "fo"],
-      ];
-      expect(result).toContainEqual(expected);
-    });
-
-    it("「っ」を含む文章のローマ字変換が正しく行える7", () => {
       const result = romanizer.transliterate("っちゃ");
       const expected = [
         [["ccya"], ["c", "cya"]],
         [["ccha"], ["c", "cha"]],
         [["ttya"], ["t", "tya"]],
+        [["xtutya"], ["xtu", "tya"]],
+        [["xtucya"], ["xtu", "cya"]],
+        [["xtucha"], ["xtu", "cha"]],
+        [["xtsutya"], ["xtsu", "tya"]],
+        [["xtsucya"], ["xtsu", "cya"]],
+        [["xtsucha"], ["xtsu", "cha"]],
+        [["ltutya"], ["ltu", "tya"]],
+        [["ltucya"], ["ltu", "cya"]],
+        [["ltucha"], ["ltu", "cha"]],
+        [["ltsutya"], ["ltsu", "tya"]],
+        [["ltsucya"], ["ltsu", "cya"]],
+        [["ltsucha"], ["ltsu", "cha"]],
       ];
       expect(result).toEqual(expected);
     });

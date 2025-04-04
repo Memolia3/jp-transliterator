@@ -187,12 +187,17 @@ export default class Romanizer extends BaseTransliterator {
     const nextChar = str[i + 1];
     if (nextChar && this.optimizedMap[nextChar]) {
       const nextCharPatterns = this.optimizedMap[nextChar];
+      const allPatterns: string[] = [];
+      
       const validPatterns = nextCharPatterns.map((pattern) => {
         const consonant = pattern.charAt(0);
         return consonant;
       });
-
-      patterns.push(validPatterns);
+      
+      allPatterns.push(...validPatterns);
+      allPatterns.push(...this.optimizedMap[str[i]]);
+      
+      patterns.push(allPatterns);
       return true;
     }
     patterns.push(this.optimizedMap[str[i]]);

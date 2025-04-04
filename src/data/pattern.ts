@@ -202,7 +202,7 @@ export const kanaToRomajiMap: TransliterationTable  = {
 };
 
 // ローマ字の対応する日本語マップ
-export const romajiToKanaMap: TransliterationTable  = {};
+export const romajiToKanaMap: TransliterationTable = {};
 
 for (const [kana, romaji] of Object.entries(kanaToRomajiMap as TransliterationTable )) {
   const [hiragana, katakana] = kana.split("|");
