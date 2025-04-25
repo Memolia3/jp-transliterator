@@ -11,8 +11,24 @@ const props = defineProps<Props>();
 </script>
 
 <template>
-    <p v-if="props.japaneseSentence">日本語入力値：{{ props.japaneseSentence }}</p>
-    <p v-else>日本語入力値：入力されていません</p>
-    <p v-if="props.japaneseSentence">ローマ字パターン：{{ getRomanSentence(props.japaneseSentence) }}</p>
+    <div v-if="props.japaneseSentence">
+        <p>ローマ字パターン：</p>
+        <ul>
+            <li v-for="(pattern, index) in getRomanSentence(props.japaneseSentence)" :key="index">
+                {{ pattern }}
+            </li>
+        </ul>
+    </div>
     <p v-else>ローマ字パターン：入力されていません</p>
 </template>
+
+<style scoped>
+ul {
+    text-align: left;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+}
+</style>
