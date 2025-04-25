@@ -69,11 +69,11 @@ export function toRomaji(text: string): string | ConversionResult {
 // }
 
 /**
- * 日本語テキストから全ての入力パターンを取得
+ * 日本語テキストから全てのローマ字パターンを取得
  * @param text 日本語テキスト
- * @returns 全ての入力パターンを含む2次元配列
+ * @returns 全てのローマ字パターンを含む2次元配列
  */
-export function getAllInputPatterns(
+export function getAllRomajiPatterns(
   text: string
 ): InputPatternMatrix | ConversionResult {
   const result = romanizer.transliterate(text);
@@ -84,15 +84,15 @@ export function getAllInputPatterns(
   // Romanizer結果のみを処理
   if (!Array.isArray(result)) return [];
 
-  return patternService.getAllInputPatterns(result as Combinations);
+  return patternService.getAllRomajiPatterns(result as Combinations);
 }
 
 /**
- * 日本語テキストからカンマ区切りの入力パターンを取得
+ * 日本語テキストから文字ごとのローマ字パターンを取得
  * @param text 日本語テキスト
- * @returns カンマ区切りの入力パターンを含む2次元配列
+ * @returns 文字ごとのローマ字パターンを含む2次元配列
  */
-export function getSegmentedPatterns(
+export function getCharacterPatterns(
   text: string
 ): InputPatternMatrix | ConversionResult {
   const result = romanizer.transliterate(text);
@@ -103,7 +103,7 @@ export function getSegmentedPatterns(
   // Romanizer結果のみを処理
   if (!Array.isArray(result)) return [];
 
-  return patternService.getSegmentedPatterns(result as Combinations);
+  return patternService.getCharacterPatterns(result as Combinations);
 }
 
 /**
@@ -132,7 +132,7 @@ export function getCompletePatterns(
     };
   }
 
-  return patternService.getCompletePatterns(result as Combinations, text);
+  return patternService.getCompletePatterns(result as Combinations);
 }
 
 /**

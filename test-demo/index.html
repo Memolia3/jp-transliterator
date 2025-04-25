@@ -1,199 +1,233 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JP Transliterator テスト</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <h1>JP Transliterator テスト</h1>
 
     <div class="tab-buttons">
-        <button class="tab-button active" onclick="showTab('basic')">基本変換</button>
-        <button class="tab-button" onclick="showTab('advanced')">詳細パターン</button>
+      <button class="tab-button active" onclick="showTab('basic')">
+        基本変換
+      </button>
+      <button class="tab-button" onclick="showTab('advanced')">
+        詳細パターン
+      </button>
     </div>
 
     <div id="basic" class="tab-content active">
-        <div class="test-container">
-            <h2>基本変換機能</h2>
-            
-            <div class="form-group">
-                <label for="input-text">テキスト入力:</label>
-                <input type="text" id="input-text" placeholder="日本語またはローマ字を入力...">
-            </div>
-            
-            <button onclick="convertToRomaji()">ローマ字に変換</button>
-            <button onclick="convertToKana()">かなに変換</button>
-            
-            <div class="result-container">
-                <div class="result-label">変換結果:</div>
-                <pre id="basic-result"></pre>
-            </div>
+      <div class="test-container">
+        <h2>基本変換機能</h2>
+
+        <div class="form-group">
+          <label for="input-text">テキスト入力:</label>
+          <input
+            type="text"
+            id="input-text"
+            placeholder="日本語またはローマ字を入力..."
+          />
         </div>
+
+        <button onclick="convertToRomaji()">ローマ字に変換</button>
+        <button onclick="convertToKana()">かなに変換</button>
+
+        <div class="result-container">
+          <div class="result-label">変換結果:</div>
+          <pre id="basic-result"></pre>
+        </div>
+      </div>
     </div>
 
     <div id="advanced" class="tab-content">
-        <div class="test-container">
-            <h2>詳細パターン分析</h2>
-            
-            <div class="form-group">
-                <label for="pattern-input">日本語入力:</label>
-                <input type="text" id="pattern-input" placeholder="日本語を入力...">
-            </div>
-            
-            <div class="button-description">
-                <button onclick="getAllPatterns()">全パターン取得</button>
-                <span class="description">- 文字全体のローマ字パターン（例: "konnichiha"）</span>
-            </div>
-            
-            <div class="button-description">
-                <button onclick="getSegmented()">分かち書きパターン</button>
-                <span class="description">- 文字ごとに分割したパターン（例: ["ko", "n", "ni", "chi", "ha"]）</span>
-            </div>
-            
-            <div class="button-description">
-                <button onclick="getComplete()">完全パターン情報</button>
-                <span class="description">- 全パターンと分かち書きパターンを含む完全な情報</span>
-            </div>
-            
-            <div class="button-description">
-                <button onclick="getPatternSet()">パターンセット取得</button>
-                <span class="description">- ローマ字と対応する分かち書きのセット</span>
-            </div>
-            
-            <div class="result-container">
-                <div class="result-label">パターン結果:</div>
-                <pre id="pattern-result"></pre>
-            </div>
+      <div class="test-container">
+        <h2>詳細パターン分析</h2>
+
+        <div class="form-group">
+          <label for="pattern-input">日本語入力:</label>
+          <input type="text" id="pattern-input" placeholder="日本語を入力..." />
         </div>
+
+        <div class="button-description">
+          <button onclick="getAllRomajiPatterns()">
+            全ローマ字パターン取得
+          </button>
+          <span class="description"
+            >- 文字全体のローマ字パターン（例: "konnichiha"）</span
+          >
+        </div>
+
+        <div class="button-description">
+          <button onclick="getCharacterPatterns()">
+            文字ごとのパターン取得
+          </button>
+          <span class="description"
+            >- 文字ごとに分割したパターン（例: ["ko", "n", "ni", "chi",
+            "ha"]）</span
+          >
+        </div>
+
+        <div class="button-description">
+          <button onclick="getComplete()">完全パターン情報</button>
+          <span class="description"
+            >- 全パターンと文字ごとのパターンを含む完全な情報</span
+          >
+        </div>
+
+        <div class="button-description">
+          <button onclick="getPatternSet()">パターンセット取得</button>
+          <span class="description"
+            >- ローマ字と対応する分かち書きのセット</span
+          >
+        </div>
+
+        <div class="result-container">
+          <div class="result-label">パターン結果:</div>
+          <pre id="pattern-result"></pre>
+        </div>
+      </div>
     </div>
 
     <div class="footer">
-        <p>JP Transliterator - 日本語変換ライブラリ</p>
+      <p>JP Transliterator - 日本語変換ライブラリ</p>
     </div>
 
     <script>
-    // タブ切り替え機能
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
+      // タブ切り替え機能
+      function showTab(tabId) {
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
         });
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.classList.remove('active');
+        document.querySelectorAll(".tab-button").forEach((button) => {
+          button.classList.remove("active");
         });
-        
-        document.getElementById(tabId).classList.add('active');
-        document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
-    }
 
-    // 結果表示用ヘルパー関数
-    function displayResult(elementId, result) {
+        document.getElementById(tabId).classList.add("active");
+        document
+          .querySelector(`.tab-button[onclick="showTab('${tabId}')"]`)
+          .classList.add("active");
+      }
+
+      // 結果表示用ヘルパー関数
+      function displayResult(elementId, result) {
         const resultElement = document.getElementById(elementId);
-        
-        if (typeof result === 'object') {
-            // 結果を見やすく整形
-            if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0]) && result[0].length === 1) {
-                // パターン配列の場合は見やすく表示
-                const formattedPatterns = result.map(pattern => pattern[0]).join(', ');
-                resultElement.textContent = `入力パターン: ${formattedPatterns}`;
-                return;
-            }
-            
-            // それ以外のオブジェクトはJSON形式で表示
-            resultElement.textContent = JSON.stringify(result, (key, value) => {
-                if (value instanceof Map) {
-                    return {
-                        dataType: 'Map',
-                        value: Array.from(value.entries())
-                    };
-                } else {
-                    return value;
-                }
-            }, 2);
+
+        if (typeof result === "object") {
+          // 結果を見やすく整形
+          if (
+            Array.isArray(result) &&
+            result.length > 0 &&
+            Array.isArray(result[0]) &&
+            result[0].length === 1
+          ) {
+            // パターン配列の場合は見やすく表示
+            const formattedPatterns = result
+              .map((pattern) => pattern[0])
+              .join(", ");
+            resultElement.textContent = `入力パターン: ${formattedPatterns}`;
+            return;
+          }
+
+          // それ以外のオブジェクトはJSON形式で表示
+          resultElement.textContent = JSON.stringify(
+            result,
+            (key, value) => {
+              if (value instanceof Map) {
+                return {
+                  dataType: "Map",
+                  value: Array.from(value.entries()),
+                };
+              } else {
+                return value;
+              }
+            },
+            2
+          );
         } else {
-            resultElement.textContent = result;
+          resultElement.textContent = result;
         }
-    }
+      }
 
-    // API呼び出し関数
-    async function callApi(endpoint, text) {
+      // API呼び出し関数
+      async function callApi(endpoint, text) {
         try {
-            const response = await fetch(`/api/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text }),
-            });
-            
-            if (!response.ok) {
-                throw new Error(`APIエラー: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data.result;
+          const response = await fetch(`/api/${endpoint}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ text }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`APIエラー: ${response.status}`);
+          }
+
+          const data = await response.json();
+          return data.result;
         } catch (error) {
-            console.error('APIエラー:', error);
-            return `エラー: ${error.message}`;
+          console.error("APIエラー:", error);
+          return `エラー: ${error.message}`;
         }
-    }
+      }
 
-    // 基本変換関数
-    async function convertToRomaji() {
-        const input = document.getElementById('input-text').value;
+      // 基本変換関数
+      async function convertToRomaji() {
+        const input = document.getElementById("input-text").value;
         if (!input) return;
-        
-        const result = await callApi('toRomaji', input);
-        displayResult('basic-result', result);
-    }
 
-    async function convertToKana() {
-        const input = document.getElementById('input-text').value;
+        const result = await callApi("toRomaji", input);
+        displayResult("basic-result", result);
+      }
+
+      async function convertToKana() {
+        const input = document.getElementById("input-text").value;
         if (!input) return;
-        
-        const result = await callApi('toKana', input);
-        displayResult('basic-result', result);
-    }
 
-    // 詳細パターン関数
-    async function getAllPatterns() {
-        const input = document.getElementById('pattern-input').value;
+        const result = await callApi("toKana", input);
+        displayResult("basic-result", result);
+      }
+
+      // 詳細パターン関数
+      async function getAllRomajiPatterns() {
+        const input = document.getElementById("pattern-input").value;
         if (!input) return;
-        
-        const result = await callApi('getAllInputPatterns', input);
-        displayResult('pattern-result', result);
-    }
 
-    async function getSegmented() {
-        const input = document.getElementById('pattern-input').value;
+        const result = await callApi("getAllRomajiPatterns", input);
+        displayResult("pattern-result", result);
+      }
+
+      async function getCharacterPatterns() {
+        const input = document.getElementById("pattern-input").value;
         if (!input) return;
-        
-        const result = await callApi('getSegmentedPatterns', input);
-        displayResult('pattern-result', result);
-    }
 
-    async function getComplete() {
-        const input = document.getElementById('pattern-input').value;
+        const result = await callApi("getCharacterPatterns", input);
+        displayResult("pattern-result", result);
+      }
+
+      async function getComplete() {
+        const input = document.getElementById("pattern-input").value;
         if (!input) return;
-        
-        const result = await callApi('getCompletePatterns', input);
-        displayResult('pattern-result', result);
-    }
 
-    async function getPatternSet() {
-        const input = document.getElementById('pattern-input').value;
+        const result = await callApi("getCompletePatterns", input);
+        displayResult("pattern-result", result);
+      }
+
+      async function getPatternSet() {
+        const input = document.getElementById("pattern-input").value;
         if (!input) return;
-        
-        const result = await callApi('getPatternSets', input);
-        displayResult('pattern-result', result);
-    }
 
-    // ページロード時に例を表示
-    window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('input-text').value = 'こんにちは';
-        document.getElementById('pattern-input').value = 'こんにちは';
-    });
+        const result = await callApi("getPatternSets", input);
+        displayResult("pattern-result", result);
+      }
+
+      // ページロード時に例を表示
+      window.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("input-text").value = "こんにちは";
+        document.getElementById("pattern-input").value = "こんにちは";
+      });
     </script>
-</body>
-</html> 
+  </body>
+</html>

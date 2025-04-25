@@ -30,10 +30,21 @@ npm start
 
 ### 詳細パターン
 
-- 全パターン取得
-- 分かち書きパターン
+- 全ローマ字パターン取得
+- 文字ごとのパターン取得
 - 完全パターン情報
 - パターンセット取得
+
+### 特殊文字対応
+
+このバージョンでは、拗音（「しゃ」「しゅ」「しょ」など）や促音（「った」など）が途中で分断されないように改善されています。チャンク処理のアルゴリズムが拗音や促音の特性を考慮し、適切な位置で文字を分割します。
+
+### チャンクサイズの制御
+
+変換処理のチャンクサイズを制御することができます：
+
+- チャンクサイズを0に設定すると、入力を分割せずに処理します（すべての可能な結果を生成）
+- 大きな入力に対しては、適切なチャンクサイズを選択することでメモリ使用量とパフォーマンスのバランスを取ることができます
 
 ## APIエンドポイント
 
@@ -41,16 +52,30 @@ npm start
 
 - `/api/toRomaji` - かな→ローマ字変換
 - `/api/toKana` - ローマ字→かな変換
-- `/api/getAllInputPatterns` - 全入力パターン取得
-- `/api/getSegmentedPatterns` - 分かち書きパターン取得
+- `/api/getAllRomajiPatterns` - 全ローマ字パターン取得
+- `/api/getCharacterPatterns` - 文字ごとのパターン取得
 - `/api/getCompletePatterns` - 完全パターン情報取得
 - `/api/getPatternSets` - パターンセット取得
 
-すべてのエンドポイントはPOSTリクエストを受け付け、`text`パラメータを含むJSONボディを期待します。
+すべてのエンドポイントはPOSTリクエストを受け付け、`text`パラメータを含むJSONボディを期待します。オプションとして`options`パラメータを指定することで、チャンクサイズなどの設定を制御できます：
+
+```json
+{
+  "text": "変換したいテキスト",
+  "options": {
+    "chunkSize": 0
+  }
+}
+```
 
 ## 注意
 
 このデモは、JP Transliteratorライブラリが`window.jpTransliterator`としてグローバルに公開されていることを前提としています。ライブラリがモジュールとして使用されている場合は、適切なバンドラーを使用してグローバル変数として公開するか、このデモページを修正する必要があります。
+
+## 性能に関する注意
+
+- チャンクサイズを0に設定すると、すべての可能な結果を生成するため、大きな入力に対してはメモリ不足エラーが発生する可能性があります
+- デフォルトのチャンクサイズ（または適切な値）を使用することで、メモリ使用量を抑えつつ十分な結果を得ることができます
 
 ## スタンドアロンモードでテストする方法
 
@@ -64,10 +89,10 @@ window.jpTransliterator = {
     toKana: function(text) { 
         return "かな変換結果: " + text;
     },
-    getAllInputPatterns: function(text) { 
+    getAllRomajiPatterns: function(text) { 
         return [["テスト", "パターン"]];
     },
-    getSegmentedPatterns: function(text) { 
+    getCharacterPatterns: function(text) { 
         return [["分かち", "書き"]];
     },
     getCompletePatterns: function(text) { 
@@ -81,4 +106,4 @@ window.jpTransliterator = {
         return [["パターン", ["セット"]]];
     }
 };
-``` 
+```

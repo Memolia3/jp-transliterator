@@ -358,7 +358,7 @@ export class PatternService {
    * @param combinations Romanizer/Japanizerからの変換結果
    * @returns 入力パターンの2次元配列
    */
-  public getAllInputPatterns(combinations: Combinations): InputPatternMatrix {
+  public getAllRomajiPatterns(combinations: Combinations): InputPatternMatrix {
     if (!combinations || !combinations.length) return [];
 
     // まとめた文字列パターンのみを抽出
@@ -379,7 +379,7 @@ export class PatternService {
    * @param combinations Romanizer/Japanizerからの変換結果
    * @returns カンマ区切りされた入力パターンの2次元配列
    */
-  public getSegmentedPatterns(combinations: Combinations): InputPatternMatrix {
+  public getCharacterPatterns(combinations: Combinations): InputPatternMatrix {
     if (!combinations || !combinations.length) return [];
 
     // カンマ区切りパターンを生成
@@ -400,10 +400,7 @@ export class PatternService {
    * @param originalText 元の日本語テキスト（オプション）
    * @returns 全入力パターン情報
    */
-  public getCompletePatterns(
-    combinations: Combinations,
-    originalText?: string
-  ): AllInputPatterns {
+  public getCompletePatterns(combinations: Combinations): AllInputPatterns {
     if (!combinations || !combinations.length) {
       return {
         patterns: [],
@@ -412,10 +409,10 @@ export class PatternService {
     }
 
     // 全パターン取得
-    const patterns = this.getAllInputPatterns(combinations);
+    const patterns = this.getAllRomajiPatterns(combinations);
 
     // カンマ区切りパターン取得
-    const segmented = this.getSegmentedPatterns(combinations);
+    const segmented = this.getCharacterPatterns(combinations);
 
     return {
       patterns,

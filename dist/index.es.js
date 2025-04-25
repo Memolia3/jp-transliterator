@@ -1,4 +1,4 @@
-class x {
+class j {
   /**
    * チャンク分けのメソッド
    * メモリ使用量を最適化するため長い入力を適切なサイズに分割
@@ -14,15 +14,15 @@ class x {
     const e = [];
     let n = 0;
     for (; n < t.length; ) {
-      let i = Math.min(n + r, t.length);
-      if (i >= t.length) {
+      let a = Math.min(n + r, t.length);
+      if (a >= t.length) {
         e.push(t.slice(n));
         break;
       }
-      let s = i;
-      const a = /[ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮ]/;
+      let s = a;
+      const i = /[ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮ]/;
       for (; s > n; ) {
-        if (s < t.length && a.test(t[s])) {
+        if (s < t.length && i.test(t[s])) {
           s--;
           continue;
         }
@@ -51,7 +51,7 @@ class x {
 }
 class I {
   constructor() {
-    this.textProcessor = new x();
+    this.textProcessor = new j();
   }
   /**
    * エラーハンドリングを含む変換プロセス
@@ -92,8 +92,8 @@ class M {
   insert(t, r) {
     let e = this.root;
     for (let n = 0; n < t.length; n++) {
-      const i = t[n];
-      e.children.has(i) || e.children.set(i, this.createNode()), e = e.children.get(i);
+      const a = t[n];
+      e.children.has(a) || e.children.set(a, this.createNode()), e = e.children.get(a);
     }
     e.isEndOfWord = !0, e.patterns = r;
   }
@@ -119,17 +119,17 @@ class M {
    * @returns 一致したノードとその長さ、またはnull
    */
   searchLongestPrefix(t, r = 0) {
-    let e = this.root, n = null, i = 0;
+    let e = this.root, n = null, a = 0;
     for (let s = r; s < t.length; s++) {
-      const a = t[s];
-      if (!e.children.has(a))
+      const i = t[s];
+      if (!e.children.has(i))
         break;
-      e = e.children.get(a), e.isEndOfWord && (n = e, i = s - r + 1);
+      e = e.children.get(i), e.isEndOfWord && (n = e, a = s - r + 1);
     }
-    return n ? { node: n, length: i } : null;
+    return n ? { node: n, length: a } : null;
   }
 }
-class T {
+class N {
   /**
    * コンストラクタ
    * @param transliterationMap 変換マップ
@@ -138,8 +138,8 @@ class T {
     this.specialCharSets = [], this.patternCache = /* @__PURE__ */ new Map(), this.searchCache = /* @__PURE__ */ new Map(), this.longestMatchCache = /* @__PURE__ */ new Map(), this.MAX_CACHE_SIZE = 1e3, this.MAX_SEARCH_CACHE_SIZE = 500, this.MAX_MATCH_CACHE_SIZE = 200;
     const r = Object.entries(
       t
-    ).reduce((e, [n, i]) => (n.split("|").forEach((s) => {
-      e[s] = i;
+    ).reduce((e, [n, a]) => (n.split("|").forEach((s) => {
+      e[s] = a;
     }), e), {});
     this.mapTrie = new M(), this.specialPatterns = {}, this.initializePatternContainers(r);
   }
@@ -152,14 +152,14 @@ class T {
     const r = new M(), e = {
       ...this.specialPatterns
     }, n = /* @__PURE__ */ new Set();
-    for (const i of t)
-      for (const s of i) {
+    for (const a of t)
+      for (const s of a) {
         n.add(s);
-        const a = this.mapTrie.search(s);
-        a && (e[s] = a);
+        const i = this.mapTrie.search(s);
+        i && (e[s] = i);
       }
-    for (const [i, s] of Object.entries(e))
-      n.has(i) || r.insert(i, s);
+    for (const [a, s] of Object.entries(e))
+      n.has(a) || r.insert(a, s);
     this.specialPatterns = e, this.clearCaches();
   }
   /**
@@ -187,13 +187,13 @@ class T {
   initializePatternContainers(t) {
     const r = /* @__PURE__ */ new Set();
     for (const n of this.specialCharSets)
-      for (const i of n)
-        r.add(i);
+      for (const a of n)
+        r.add(a);
     const e = [];
-    for (const [n, i] of Object.entries(t))
-      r.has(n) ? this.specialPatterns[n] = i : e.push([n, i]);
-    for (const [n, i] of e)
-      this.mapTrie.insert(n, i);
+    for (const [n, a] of Object.entries(t))
+      r.has(n) ? this.specialPatterns[n] = a : e.push([n, a]);
+    for (const [n, a] of e)
+      this.mapTrie.insert(n, a);
   }
   /**
    * 特殊パターンを取得
@@ -212,18 +212,18 @@ class T {
     const n = `${t.substring(
       r,
       r + 10
-    )}_${r}`, i = this.longestMatchCache.get(n);
-    if (i !== void 0)
-      return i;
+    )}_${r}`, a = this.longestMatchCache.get(n);
+    if (a !== void 0)
+      return a;
     let s = null;
-    if (e.some((a) => a.has(t[r]))) {
-      const a = t[r], c = this.specialPatterns[a];
-      c && (s = { pattern: c, length: 1 });
+    if (e.some((i) => i.has(t[r]))) {
+      const i = t[r], h = this.specialPatterns[i];
+      h && (s = { pattern: h, length: 1 });
     } else {
-      const a = this.mapTrie.searchLongestPrefix(t, r);
-      a && a.node.patterns && (s = {
-        pattern: a.node.patterns,
-        length: a.length
+      const i = this.mapTrie.searchLongestPrefix(t, r);
+      i && i.node.patterns && (s = {
+        pattern: i.node.patterns,
+        length: i.length
       });
     }
     return this.longestMatchCache.size >= this.MAX_MATCH_CACHE_SIZE && this.longestMatchCache.clear(), this.longestMatchCache.set(n, s), s;
@@ -235,9 +235,9 @@ class T {
   getInputPatterns(t) {
     const r = [];
     for (let e = 0; e < t.length; e++) {
-      const n = t[e], i = this.mapTrie.search(n);
-      if (i)
-        r.push({ pattern: i, char: n });
+      const n = t[e], a = this.mapTrie.search(n);
+      if (a)
+        r.push({ pattern: a, char: n });
       else {
         const s = this.specialPatterns[n];
         s ? r.push({ pattern: s, char: n }) : r.push({ pattern: [n], char: n });
@@ -273,7 +273,7 @@ class T {
   getCompoundPatterns(t, r) {
     const e = [];
     for (let n = 2; n <= 4 && r + n <= t.length; n++) {
-      const i = t.substring(r, r + n), s = this.mapTrie.search(i);
+      const a = t.substring(r, r + n), s = this.mapTrie.search(a);
       s && e.push({ patterns: [s], length: n });
     }
     return e;
@@ -283,7 +283,7 @@ class T {
    * @param combinations Romanizer/Japanizerからの変換結果
    * @returns 入力パターンの2次元配列
    */
-  getAllInputPatterns(t) {
+  getAllRomajiPatterns(t) {
     if (!t || !t.length) return [];
     const r = [];
     for (const [e, n] of t)
@@ -295,7 +295,7 @@ class T {
    * @param combinations Romanizer/Japanizerからの変換結果
    * @returns カンマ区切りされた入力パターンの2次元配列
    */
-  getSegmentedPatterns(t) {
+  getCharacterPatterns(t) {
     if (!t || !t.length) return [];
     const r = [];
     for (const [e, n] of t)
@@ -308,16 +308,16 @@ class T {
    * @param originalText 元の日本語テキスト（オプション）
    * @returns 全入力パターン情報
    */
-  getCompletePatterns(t, r) {
+  getCompletePatterns(t) {
     if (!t || !t.length)
       return {
         patterns: [],
         segmented: []
       };
-    const e = this.getAllInputPatterns(t), n = this.getSegmentedPatterns(t);
+    const r = this.getAllRomajiPatterns(t), e = this.getCharacterPatterns(t);
     return {
-      patterns: e,
-      segmented: n
+      patterns: r,
+      segmented: e
     };
   }
   /**
@@ -357,7 +357,7 @@ class T {
     return r;
   }
 }
-class U {
+class L {
   /**
    * ストリーミング方式でカーテシアン積を計算
    * メモリ使用量を制御しながら大きな直積を計算
@@ -367,16 +367,16 @@ class U {
    */
   combineCartesian(t, r, e) {
     const n = [];
-    let i = 0;
-    for (const [s, a] of t) {
-      for (const [c, p] of r) {
-        if (i >= e) break;
-        const g = s.flatMap(
-          (o) => c.map((u) => o + u)
-        ), S = [...a, ...p];
-        n.push([g, S]), i++;
+    let a = 0;
+    for (const [s, i] of t) {
+      for (const [h, f] of r) {
+        if (a >= e) break;
+        const p = s.flatMap(
+          (o) => h.map((u) => o + u)
+        ), C = [...i, ...f];
+        n.push([p, C]), a++;
       }
-      if (i >= e) break;
+      if (a >= e) break;
     }
     return n;
   }
@@ -387,15 +387,15 @@ class U {
    */
   calculateCartesianProduct(t, r = Number.MAX_SAFE_INTEGER) {
     if (t.length === 0) return [[]];
-    if (t.length === 1) return t[0].map((a) => [a]);
-    const e = [], n = t[0], i = t.slice(1), s = this.calculateCartesianProduct(
-      i,
+    if (t.length === 1) return t[0].map((i) => [i]);
+    const e = [], n = t[0], a = t.slice(1), s = this.calculateCartesianProduct(
+      a,
       r
     );
-    for (const a of n) {
-      for (const c of s) {
+    for (const i of n) {
+      for (const h of s) {
         if (e.length >= r) break;
-        e.push([a, ...c]);
+        e.push([i, ...h]);
       }
       if (e.length >= r) break;
     }
@@ -411,10 +411,10 @@ class U {
     if (t.length === 1) return t[0];
     let e = t[0];
     for (let n = 1; n < t.length; n++) {
-      const i = t[n], s = [];
-      for (let a = 0; a < e.length && s.length < r; a++)
-        for (let c = 0; c < i.length && s.length < r; c++)
-          s.push(e[a] + i[c]);
+      const a = t[n], s = [];
+      for (let i = 0; i < e.length && s.length < r; i++)
+        for (let h = 0; h < a.length && s.length < r; h++)
+          s.push(e[i] + a[h]);
       if (e = s, e.length >= r) {
         e = e.slice(0, r);
         break;
@@ -423,7 +423,7 @@ class U {
     return e;
   }
 }
-class b {
+class z {
   /**
    * 全角文字を半角に変換
    * @param str 変換対象文字列
@@ -473,7 +473,7 @@ class b {
     return this.normalizeSymbols(this.toHalfWidth(t));
   }
 }
-const k = {
+const R = {
   "あ|ア": ["a"],
   "い|イ": ["i", "yi"],
   "う|ウ": ["u", "wu", "whu"],
@@ -716,22 +716,22 @@ const k = {
   "８": ["8"],
   "９": ["9"],
   "０": ["0"]
-}, C = {};
+}, g = {};
 for (const [l, t] of Object.entries(
-  k
+  R
 )) {
   const [r, e] = l.split("|");
   t.forEach((n) => {
-    C[n] ? (C[n].includes(r) || C[n].push(r), C[n].includes(e) || C[n].push(e)) : C[n] = [r, e];
+    g[n] ? (g[n].includes(r) || g[n].push(r), g[n].includes(e) || g[n].push(e)) : g[n] = [r, e];
   });
 }
-const h = class h extends I {
+const c = class c extends I {
   constructor() {
-    super(), this.MAX_RESULT_SIZE = Number.MAX_SAFE_INTEGER, this.patternService = new T(
-      k
-    ), this.cartesianService = new U(), this.textConverterService = new b(), this.patternService.initializeSpecialSets([
-      h.N_CHARS,
-      h.TSU_CHARS
+    super(), this.MAX_RESULT_SIZE = Number.MAX_SAFE_INTEGER, this.patternService = new N(
+      R
+    ), this.cartesianService = new L(), this.textConverterService = new z(), this.patternService.initializeSpecialSets([
+      c.N_CHARS,
+      c.TSU_CHARS
     ]);
   }
   /**
@@ -741,33 +741,33 @@ const h = class h extends I {
     if (!t) return null;
     const e = this.textConverterService.toHalfWidth(t);
     if (this.isOnlySpecialCharacters(e)) {
-      const c = this.createDirectMapping(e);
-      return c.length > 0 ? c : null;
+      const h = this.createDirectMapping(e);
+      return h.length > 0 ? h : null;
     }
-    const n = t.length > 20 ? Math.min(r, 8) : r, i = this.textProcessor.splitIntoChunks(
+    const n = t.length > 20 ? Math.min(r, 8) : r, a = this.textProcessor.splitIntoChunks(
       e,
       n
     ), s = [];
-    for (const c of i) {
-      const p = this.generatePatternArray(c);
-      if (!p.length) continue;
-      const g = this.generateAllCombinations(p, c);
-      if (g.length === 0) {
-        const S = p.map((u) => u[0]), o = S.join("");
-        s.push([[[o], S]]);
+    for (const h of a) {
+      const f = this.generatePatternArray(h);
+      if (!f.length) continue;
+      const p = this.generateAllCombinations(f, h);
+      if (p.length === 0) {
+        const C = f.map((u) => u[0]), o = C.join("");
+        s.push([[[o], C]]);
       } else
-        s.push(g);
+        s.push(p);
     }
     if (s.length === 0) return null;
     if (s.length === 1) return s[0];
-    let a = s[0];
-    for (let c = 1; c < s.length; c++)
-      a = this.cartesianService.combineCartesian(
-        a,
-        s[c],
+    let i = s[0];
+    for (let h = 1; h < s.length; h++)
+      i = this.cartesianService.combineCartesian(
+        i,
+        s[h],
         this.MAX_RESULT_SIZE
       );
-    return a.length ? a : null;
+    return i.length ? i : null;
   }
   /**
    * 文字列が特殊文字のみで構成されているかチェック
@@ -783,9 +783,9 @@ const h = class h extends I {
    */
   createDirectMapping(t) {
     const r = [], e = [];
-    for (const i of t) {
-      const s = this.patternService.search(i);
-      s ? e.push(s[0]) : e.push(i);
+    for (const a of t) {
+      const s = this.patternService.search(a);
+      s ? e.push(s[0]) : e.push(a);
     }
     const n = e.join("");
     return r.push([[n], e]), r;
@@ -805,8 +805,8 @@ const h = class h extends I {
     for (let e = 0; e < t.length; e++) {
       const n = t[e];
       if (this.isSpecialCharacter(n)) {
-        const a = this.patternService.search(n);
-        a ? r.push(a) : r.push([n]);
+        const i = this.patternService.search(n);
+        i ? r.push(i) : r.push([n]);
         continue;
       }
       if (this.handleSpecialN(t, e, r) || this.handleTsu(t, e, r))
@@ -814,8 +814,8 @@ const h = class h extends I {
       const s = this.patternService.findLongestMatch(
         t,
         e,
-        h.N_CHARS,
-        h.TSU_CHARS
+        c.N_CHARS,
+        c.TSU_CHARS
       );
       s ? (r.push(s.pattern), e += s.length - 1) : r.push([n]);
     }
@@ -825,16 +825,16 @@ const h = class h extends I {
    * 特殊文字かどうかをチェック（単一文字用）
    */
   isSpecialCharacter(t) {
-    return t ? t.length === 1 ? h.HALF_WIDTH_SPECIAL_CHARS.test(t) || h.FULL_WIDTH_SPECIAL_CHARS.test(t) || h.PUNCTUATIONS.test(t) : this.isSpecialCharacter(t[0]) : !1;
+    return t ? t.length === 1 ? c.HALF_WIDTH_SPECIAL_CHARS.test(t) || c.FULL_WIDTH_SPECIAL_CHARS.test(t) || c.PUNCTUATIONS.test(t) : this.isSpecialCharacter(t[0]) : !1;
   }
   /**
    * 「ん」の特殊処理
    */
   handleSpecialN(t, r, e) {
     const n = t[r];
-    if (!h.N_CHARS.has(n)) return !1;
-    const i = this.patternService.getSpecialPatterns(n);
-    return i ? (r + 1 < t.length && h.NA_LINE_CHARS.has(t[r + 1]) ? e.push(["nn"]) : e.push(i), !0) : !1;
+    if (!c.N_CHARS.has(n)) return !1;
+    const a = this.patternService.getSpecialPatterns(n);
+    return a ? (r + 1 < t.length && c.NA_LINE_CHARS.has(t[r + 1]) ? e.push(["nn"]) : e.push(a), !0) : !1;
   }
   /**
    * 「っ」の特殊処理
@@ -842,37 +842,37 @@ const h = class h extends I {
   handleTsu(t, r, e) {
     var s;
     const n = t[r];
-    if (!h.TSU_CHARS.has(n)) return !1;
-    const i = this.patternService.getSpecialPatterns(n);
-    if (!i) return !1;
+    if (!c.TSU_CHARS.has(n)) return !1;
+    const a = this.patternService.getSpecialPatterns(n);
+    if (!a) return !1;
     if (r + 1 < t.length) {
-      const a = this.patternService.findLongestMatch(
+      const i = this.patternService.findLongestMatch(
         t,
         r + 1,
-        h.N_CHARS,
-        h.TSU_CHARS
+        c.N_CHARS,
+        c.TSU_CHARS
       );
-      if (a && a.pattern[0][0] && /^[a-z]/.test(a.pattern[0][0])) {
-        const c = ((s = a.pattern[0][0].match(/^[^aiueo]*/)) == null ? void 0 : s[0]) || "";
-        if (c) {
-          const p = [c, ...i];
-          return e.push(p), !0;
+      if (i && i.pattern[0][0] && /^[a-z]/.test(i.pattern[0][0])) {
+        const h = ((s = i.pattern[0][0].match(/^[^aiueo]*/)) == null ? void 0 : s[0]) || "";
+        if (h) {
+          const f = [h, ...a];
+          return e.push(f), !0;
         }
       }
     }
-    return e.push(i), !0;
+    return e.push(a), !0;
   }
   /**
    * 子音の組み合わせが有効かどうかをチェック
    */
   isValidConsonantCombination(t) {
     for (let e = 0; e < t.length - 1; e++) {
-      const n = t[e], i = t[e + 1];
-      if (!this.isSpecialCharacter(n) && n.length === 1 && !h.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(n) && !i.startsWith(n))
+      const n = t[e], a = t[e + 1];
+      if (!this.isSpecialCharacter(n) && n.length === 1 && !c.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(n) && !a.startsWith(n))
         return !1;
     }
     const r = t[t.length - 1];
-    return !(r.length === 1 && !h.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(r) && !this.isSpecialCharacter(r));
+    return !(r.length === 1 && !c.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(r) && !this.isSpecialCharacter(r));
   }
   /**
    * すべての組み合わせを生成
@@ -880,44 +880,44 @@ const h = class h extends I {
   generateAllCombinations(t, r) {
     if (!t.length) return [];
     const e = [], n = Number.MAX_SAFE_INTEGER;
-    let i = [{ current: [], parts: [], index: 0 }], s = [];
-    const a = /* @__PURE__ */ new Set(["xtu", "xtsu", "ltu", "ltsu"]), c = h.CONSONANT_CHECK_THROUGH_ROMAN_CHARS, p = /* @__PURE__ */ new Set(["n", "nn"]), g = [];
+    let a = [{ current: [], parts: [], index: 0 }], s = [];
+    const i = /* @__PURE__ */ new Set(["xtu", "xtsu", "ltu", "ltsu"]), h = c.CONSONANT_CHECK_THROUGH_ROMAN_CHARS, f = /* @__PURE__ */ new Set(["n", "nn"]), p = [];
     if (r)
       for (let o = 0; o < r.length; o++)
-        g[o] = this.isSpecialCharacter(r[o]);
-    let S = t.reduce((o, u) => o + u.length, 0) / t.length;
+        p[o] = this.isSpecialCharacter(r[o]);
+    let C = t.reduce((o, u) => o + u.length, 0) / t.length;
     for (Math.pow(
-      S,
+      C,
       t.length
-    ); i.length > 0; ) {
+    ); a.length > 0; ) {
       s.length = 0;
-      for (let u = 0; u < i.length; u++) {
-        const { current: v, parts: d, index: A } = i[u];
-        if (A === t.length) {
-          this.isValidConsonantCombination(d) && e.push([[v.join("")], d.slice()]);
+      for (let u = 0; u < a.length; u++) {
+        const { current: m, parts: S, index: y } = a[u];
+        if (y === t.length) {
+          this.isValidConsonantCombination(S) && e.push([[m.join("")], S.slice()]);
           continue;
         }
-        const N = t[A], L = g[A] || !1, O = A > 0 && g[A - 1] || !1;
-        for (let m = 0; m < N.length; m++) {
-          const y = N[m];
+        const T = t[y], k = p[y] || !1, b = y > 0 && p[y - 1] || !1;
+        for (let H = 0; H < T.length; H++) {
+          const d = T[H];
           if (s.length < n) {
-            let R = !0;
-            if (d.length > 0) {
-              const P = d[d.length - 1], W = a.has(y), j = p.has(y) || p.has(P);
-              !O && // 前が記号でない場合
-              !L && // 現在も記号でない場合
-              !j && // 「ん」でない場合
-              P.length === 1 && !c.has(P) && !y.startsWith(P) && !W && (P.length === 1 && y.startsWith(P) || (R = !1));
+            let E = !0;
+            if (S.length > 0) {
+              const A = S[S.length - 1], O = i.has(d), v = f.has(d) || f.has(A);
+              !b && // 前が記号でない場合
+              !k && // 現在も記号でない場合
+              !v && // 「ん」でない場合
+              A.length === 1 && !h.has(A) && !d.startsWith(A) && !O && (A.length === 1 && d.startsWith(A) || (E = !1));
             }
-            R && s.push({
-              current: [...v, y],
-              parts: [...d, y],
-              index: A + 1
+            E && s.push({
+              current: [...m, d],
+              parts: [...S, d],
+              index: y + 1
             });
           }
         }
       }
-      const o = i;
+      const o = a;
       o.length = 0;
       for (let u = 0; u < s.length; u++)
         o.push({
@@ -925,7 +925,7 @@ const h = class h extends I {
           parts: [...s[u].parts],
           index: s[u].index
         });
-      i = o, s = [];
+      a = o, s = [];
     }
     if (e.length === 0 && t.length > 0) {
       const o = t.map((u) => u[0]);
@@ -934,7 +934,7 @@ const h = class h extends I {
     return e;
   }
 };
-h.NA_LINE_CHARS = /* @__PURE__ */ new Set([
+c.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "な",
   "に",
   "ぬ",
@@ -945,208 +945,33 @@ h.NA_LINE_CHARS = /* @__PURE__ */ new Set([
   "ヌ",
   "ネ",
   "ノ"
-]), h.N_CHARS = /* @__PURE__ */ new Set(["ん", "ン"]), h.TSU_CHARS = /* @__PURE__ */ new Set(["っ", "ッ"]), h.CONSONANT_CHECK_THROUGH_ROMAN_CHARS = /* @__PURE__ */ new Set([
+]), c.N_CHARS = /* @__PURE__ */ new Set(["ん", "ン"]), c.TSU_CHARS = /* @__PURE__ */ new Set(["っ", "ッ"]), c.CONSONANT_CHECK_THROUGH_ROMAN_CHARS = /* @__PURE__ */ new Set([
   "a",
   "i",
   "u",
   "e",
   "o",
   "n"
-]), h.HALF_WIDTH_SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{}|;:'",.\/<>?]/, h.FULL_WIDTH_SPECIAL_CHARS = /[！＠＃＄％＾＆＊（）＿＋－＝［］｛｝｜；：'"、。・＜＞？]/, h.PUNCTUATIONS = /[、。，．・：；？！´｀¨＾￣＿―‐／＼～∥｜…‥''""（）〔〕［］｛｝〈〉《》「」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄￠￡％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓〓]/;
-let _ = h;
-const f = class f extends I {
-  constructor() {
-    super(), this.MAX_RESULT_SIZE = Number.MAX_SAFE_INTEGER, this.patternService = new T(
-      C
-    ), this.textConverterService = new b(), this.patternService.initializeSpecialSets([
-      f.N_CHARS,
-      f.SPECIAL_CHARS
-    ]);
-  }
-  /**
-   * 実際の変換プロセスを実装
-   */
-  processTransliteration(t, r) {
-    if (!t) return null;
-    const e = this.textConverterService.toHalfWidth(
-      t.toLowerCase()
-    );
-    if (this.isOnlySpecialCharacters(e)) {
-      const s = this.createDirectMapping(e);
-      return s.length > 0 ? s : null;
-    }
-    const n = this.textProcessor.splitIntoChunks(e, r), i = [];
-    for (const s of n) {
-      const a = this.generatePatternArray(s);
-      if (a.length === 0)
-        continue;
-      const c = this.generateAllCombinations(a), p = this.toFullWidthCombinations(c);
-      i.push(p);
-    }
-    return i.length === 0 ? null : i.length === 1 ? i[0] : this.mergeResults(i);
-  }
-  /**
-   * 結果配列をマージ
-   */
-  mergeResults(t) {
-    const r = [];
-    for (const e of t)
-      for (const [n, i] of e)
-        r.push([n, i]);
-    return r;
-  }
-  /**
-   * 特殊文字かどうかをチェック（単一文字用）
-   */
-  isSpecialCharacter(t) {
-    return t ? t.length === 1 ? f.HALF_WIDTH_SPECIAL_CHARS.test(t) || f.FULL_WIDTH_SPECIAL_CHARS.test(t) || f.PUNCTUATIONS.test(t) : this.isSpecialCharacter(t[0]) : !1;
-  }
-  /**
-   * 文字列が特殊文字のみかどうかをチェック
-   */
-  isOnlySpecialCharacters(t) {
-    if (!t) return !1;
-    for (let r = 0; r < t.length; r++) {
-      const e = t[r];
-      if (!this.isSpecialCharacter(e))
-        return !1;
-    }
-    return !0;
-  }
-  /**
-   * 特殊文字のための直接マッピングを作成
-   */
-  createDirectMapping(t) {
-    const r = [], e = [];
-    for (const n of t)
-      e.push(n);
-    return r.push([[t], e]), r;
-  }
-  /**
-   * 組み合わせを全角文字列に変換
-   */
-  toFullWidthCombinations(t) {
-    return t.map(([r, e]) => [r.map(
-      (i) => this.textConverterService.toFullWidth(i)
-    ), e]);
-  }
-  /**
-   * パターン配列生成メソッド
-   */
-  generatePatternArray(t) {
-    const r = [];
-    let e = 0;
-    for (; e < t.length; ) {
-      const n = this.handleSpecialCases(t, e, r);
-      if (n.processed) {
-        e += n.advance;
-        continue;
-      }
-      let i = !1;
-      for (let s = 4; s > 0; s--)
-        if (e + s <= t.length) {
-          const a = t.substring(e, e + s), c = this.patternService.getInput(a);
-          if (c && Array.isArray(c)) {
-            r.push(c), e += s, i = !0;
-            break;
-          }
-        }
-      i || (r.push([t[e]]), e++);
-    }
-    return r;
-  }
-  /**
-   * 特殊ケースの処理
-   */
-  handleSpecialCases(t, r, e) {
-    if (t[r] === "n")
-      return this.handleSpecialN(t, r, e);
-    if (r + 1 < t.length && t[r] === t[r + 1] && this.isConsonant(t[r])) {
-      const n = this.patternService.getInput("xtsu");
-      if (n && Array.isArray(n))
-        return e.push(n), { processed: !0, advance: 1 };
-    }
-    return { processed: !1, advance: 0 };
-  }
-  /**
-   * 'n'の特殊処理
-   */
-  handleSpecialN(t, r, e) {
-    if (r === t.length - 1) {
-      const s = this.patternService.getSpecialPatterns("n");
-      return s ? (e.push(s), { processed: !0, advance: 1 }) : { processed: !1, advance: 0 };
-    }
-    if (t[r + 1] === "'") {
-      const s = this.patternService.getSpecialPatterns("n");
-      return s ? (e.push(s), { processed: !0, advance: 2 }) : { processed: !1, advance: 0 };
-    }
-    const n = t[r + 1];
-    if (f.VOWEL_CHARS.has(n) || n === "y") {
-      const s = t.substring(r, r + 2), a = this.patternService.getInput(s);
-      if (a && Array.isArray(a))
-        return e.push(a), { processed: !0, advance: 2 };
-      const c = this.patternService.getSpecialPatterns("n");
-      if (c)
-        return e.push(c), { processed: !0, advance: 1 };
-    }
-    const i = t.substring(r, r + 3);
-    if (i === "nny" || i === "nnw") {
-      const s = this.patternService.getSpecialPatterns("n");
-      if (s)
-        return e.push(s), { processed: !0, advance: 1 };
-    }
-    return { processed: !1, advance: 0 };
-  }
-  /**
-   * 文字が子音かどうかをチェック
-   */
-  isConsonant(t) {
-    return !f.VOWEL_CHARS.has(t) && t !== "n";
-  }
-  /**
-   * すべての組み合わせを生成
-   */
-  generateAllCombinations(t) {
-    if (!t.length) return [];
-    const r = [], e = t.map((i) => i[0]), n = e.join("");
-    return r.push([[n], e]), r;
-  }
-};
-f.SPECIAL_CHARS = /* @__PURE__ */ new Set(["xn", "xtsu", "xtu"]), f.VOWEL_CHARS = /* @__PURE__ */ new Set(["a", "i", "u", "e", "o"]), f.N_CHARS = /* @__PURE__ */ new Set(["n"]), f.SMALL_CHARS = [
-  "ぁ",
-  "ぃ",
-  "ぅ",
-  "ぇ",
-  "ぉ",
-  "っ",
-  "ゃ",
-  "ゅ",
-  "ょ",
-  "ゎ"
-], f.SPECIAL_CHARS_N = ["ん", "n"], f.HALF_WIDTH_SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{}|;:'",.\/<>?]/, f.FULL_WIDTH_SPECIAL_CHARS = /[！＠＃＄％＾＆＊（）＿＋－＝［］｛｝｜；：'"、。・＜＞？]/, f.PUNCTUATIONS = /[、。，．・：；？！´｀¨＾￣＿―‐／＼～∥｜…‥''""（）〔〕［］｛｝〈〉《》「」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄￠￡％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓〓]/;
-let E = f;
-const w = new _(), F = new E(), H = new T(
-  C
+]), c.HALF_WIDTH_SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{}|;:'",.\/<>?]/, c.FULL_WIDTH_SPECIAL_CHARS = /[！＠＃＄％＾＆＊（）＿＋－＝［］｛｝｜；：'"、。・＜＞？]/, c.PUNCTUATIONS = /[、。，．・：；？！´｀¨＾￣＿―‐／＼～∥｜…‥''""（）〔〕［］｛｝〈〉《》「」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄￠￡％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓〓]/;
+let _ = c;
+const P = new _(), w = new N(
+  g
 );
-function q(l) {
-  const t = w.transliterate(l);
+function x(l) {
+  const t = P.transliterate(l);
   return t ? "error" in t ? t : Array.isArray(t) && t.length > 0 && t[0][0].length > 0 ? t[0][0][0] : "" : "";
 }
-function D(l) {
-  const t = F.transliterate(l);
-  return t ? "error" in t ? t : (Array.isArray(t), typeof t[0] == "string" ? t[0] : "") : "";
+function W(l) {
+  const t = P.transliterate(l);
+  return t ? "error" in t ? t : Array.isArray(t) ? w.getAllRomajiPatterns(t) : [] : [];
 }
-function Z(l) {
-  const t = w.transliterate(l);
-  return t ? "error" in t ? t : Array.isArray(t) ? H.getAllInputPatterns(t) : [] : [];
+function q(l) {
+  const t = P.transliterate(l);
+  return t ? "error" in t ? t : Array.isArray(t) ? w.getCharacterPatterns(t) : [] : [];
 }
-function z(l) {
-  const t = w.transliterate(l);
-  return t ? "error" in t ? t : Array.isArray(t) ? H.getSegmentedPatterns(t) : [] : [];
-}
-function K(l) {
-  const t = w.transliterate(l);
-  return t ? "error" in t ? t : Array.isArray(t) ? H.getCompletePatterns(t, l) : {
+function X(l) {
+  const t = P.transliterate(l);
+  return t ? "error" in t ? t : Array.isArray(t) ? w.getCompletePatterns(t) : {
     patterns: [],
     segmented: []
   } : {
@@ -1154,17 +979,15 @@ function K(l) {
     segmented: []
   };
 }
-function G(l) {
-  const t = w.transliterate(l);
-  return t ? "error" in t ? t : Array.isArray(t) ? H.toPatternSetArray(t) : [] : [];
+function Z(l) {
+  const t = P.transliterate(l);
+  return t ? "error" in t ? t : Array.isArray(t) ? w.toPatternSetArray(t) : [] : [];
 }
 export {
-  E as Japanizer,
   _ as Romanizer,
-  Z as getAllInputPatterns,
-  K as getCompletePatterns,
-  G as getPatternSets,
-  z as getSegmentedPatterns,
-  D as toKana,
-  q as toRomaji
+  W as getAllRomajiPatterns,
+  q as getCharacterPatterns,
+  X as getCompletePatterns,
+  Z as getPatternSets,
+  x as toRomaji
 };

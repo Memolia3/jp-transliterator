@@ -90,20 +90,20 @@ export declare class PatternService {
      * @param combinations Romanizer/Japanizerからの変換結果
      * @returns 入力パターンの2次元配列
      */
-    getAllInputPatterns(combinations: Combinations): InputPatternMatrix;
+    getAllRomajiPatterns(combinations: Combinations): InputPatternMatrix;
     /**
      * 変換結果から日本語文字ごとのカンマ区切りパターンを2次元配列で取得
      * @param combinations Romanizer/Japanizerからの変換結果
      * @returns カンマ区切りされた入力パターンの2次元配列
      */
-    getSegmentedPatterns(combinations: Combinations): InputPatternMatrix;
+    getCharacterPatterns(combinations: Combinations): InputPatternMatrix;
     /**
      * 変換結果から完全な入力パターン情報を取得
      * @param combinations Romanizer/Japanizerからの変換結果
      * @param originalText 元の日本語テキスト（オプション）
      * @returns 全入力パターン情報
      */
-    getCompletePatterns(combinations: Combinations, originalText?: string): AllInputPatterns;
+    getCompletePatterns(combinations: Combinations): AllInputPatterns;
     /**
      * 変換結果を標準的なパターンセット配列に変換
      * @param combinations Romanizer/Japanizerからの変換結果
