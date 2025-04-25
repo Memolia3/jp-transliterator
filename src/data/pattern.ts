@@ -1,7 +1,7 @@
-import type { TransliterationTable  } from "../types/transliterate.types";
+import type { TransliterationTable } from "../types/transliterate.types";
 
 // 日本語の対応するローマ字マップ
-export const kanaToRomajiMap: TransliterationTable  = {
+export const kanaToRomajiMap: TransliterationTable = {
   "あ|ア": ["a"],
   "い|イ": ["i", "yi"],
   "う|ウ": ["u", "wu", "whu"],
@@ -199,12 +199,59 @@ export const kanaToRomajiMap: TransliterationTable  = {
   "ゔょ|ヴョ": ["vyo"],
   "っ|ッ": ["xtu", "xtsu", "ltu", "ltsu"],
   "ゎ|ヮ": ["xwa", "lwa"],
+  "ゕ|ヵ": ["xka", "lka"],
+  "ゖ|ヶ": ["xke", "lke"],
+  "。": ["."],
+  "、": [","],
+  ー: ["-"],
+  "「": ["["],
+  "」": ["]"],
+  "（": ["("],
+  "）": [")"],
+  "｛": ["{"],
+  "｝": ["}"],
+  "【": ["["],
+  "】": ["]"],
+  "〜": ["~"],
+  "・": ["/"],
+  "‐": ["-"],
+  "！": ["!"],
+  "？": ["?"],
+  "：": [":"],
+  "；": [";"],
+  "＃": ["#"],
+  "％": ["%"],
+  "＆": ["&"],
+  "＊": ["*"],
+  "＋": ["+"],
+  "－": ["-"],
+  "＄": ["$"],
+  "＠": ["@"],
+  "＾": ["^"],
+  "＿": ["_"],
+  "～": ["~"],
+  "｜": ["|"],
+  "＝": ["="],
+  "＜": ["<"],
+  "＞": [">"],
+  "１": ["1"],
+  "２": ["2"],
+  "３": ["3"],
+  "４": ["4"],
+  "５": ["5"],
+  "６": ["6"],
+  "７": ["7"],
+  "８": ["8"],
+  "９": ["9"],
+  "０": ["0"],
 };
 
 // ローマ字の対応する日本語マップ
 export const romajiToKanaMap: TransliterationTable = {};
 
-for (const [kana, romaji] of Object.entries(kanaToRomajiMap as TransliterationTable )) {
+for (const [kana, romaji] of Object.entries(
+  kanaToRomajiMap as TransliterationTable
+)) {
   const [hiragana, katakana] = kana.split("|");
   romaji.forEach((roma) => {
     if (!romajiToKanaMap[roma]) {

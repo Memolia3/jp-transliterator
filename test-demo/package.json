@@ -1,0 +1,12 @@
+{
+  "name": "jp-transliterator-test-demo",
+  "version": "1.0.0",
+  "description": "JP Transliteratorのテストデモ",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+} 

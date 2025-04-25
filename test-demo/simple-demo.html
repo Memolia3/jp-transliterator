@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JP Transliterator シンプルデモ</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Meiryo', sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>JP Transliterator シンプルデモ</h1>
+
+    <div class="container">
+        <h2>ローマ字 → かな変換</h2>
+        <div class="form-group">
+            <label for="romaji-input">ローマ字入力:</label>
+            <input type="text" id="romaji-input" placeholder="例: konnichiwa">
+        </div>
+        <button id="to-kana-btn">かなに変換</button>
+        <div class="result" id="kana-result"></div>
+    </div>
+
+    <div class="container">
+        <h2>かな → ローマ字変換</h2>
+        <div class="form-group">
+            <label for="kana-input">かな入力:</label>
+            <input type="text" id="kana-input" placeholder="例: こんにちは">
+        </div>
+        <button id="to-romaji-btn">ローマ字に変換</button>
+        <div class="result" id="romaji-result"></div>
+    </div>
+
+    <script>
+        // ライブラリの初期化を確認
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!window.jpTransliterator) {
+                document.body.innerHTML = `
+                    <div style="text-align: center; margin-top: 50px;">
+                        <h2>エラー: ライブラリが読み込まれていません</h2>
+                        <p>このHTMLファイルを使用するには、JP Transliteratorライブラリをビルドして読み込む必要があります。</p>
+                        <code>&lt;script src="../dist/jp-transliterator.js"&gt;&lt;/script&gt;</code>
+                    </div>
+                `;
+                return;
+            }
+
+            // ローマ字→かな変換
+            document.getElementById('to-kana-btn').addEventListener('click', () => {
+                const input = document.getElementById('romaji-input').value;
+                const result = window.jpTransliterator.toKana(input);
+                document.getElementById('kana-result').textContent = result;
+            });
+
+            // かな→ローマ字変換
+            document.getElementById('to-romaji-btn').addEventListener('click', () => {
+                const input = document.getElementById('kana-input').value;
+                const result = window.jpTransliterator.toRomaji(input);
+                document.getElementById('romaji-result').textContent = result;
+            });
+
+            // 初期サンプル
+            document.getElementById('romaji-input').value = 'konnichiwa';
+            document.getElementById('kana-input').value = 'こんにちは';
+        });
+    </script>
+
+    <!-- ビルドしたJP Transliteratorライブラリを読み込む -->
+    <!-- <script src="../dist/jp-transliterator.js"></script> -->
+</body>
+</html> 
