@@ -210,17 +210,20 @@ export class PatternService {
 
     let result: { pattern: string[]; length: number } | null = null;
 
-    // 特殊文字の場合はTrieでの検索をスキップ
+    // 特殊文字の場合も一旦パターンを取得
     if (specialSets.some((set) => set.has(str[startIndex]))) {
       const char = str[startIndex];
       const pattern = this.specialPatterns[char];
       if (pattern) {
         result = { pattern, length: 1 };
       }
-    } else {
-      // Trieを使用して最長一致を検索
-      const searchResult = this.mapTrie.searchLongestPrefix(str, startIndex);
-      if (searchResult && searchResult.node.patterns) {
+    }
+
+    // Trieを使用して最長一致を検索（特殊文字でも実行）
+    const searchResult = this.mapTrie.searchLongestPrefix(str, startIndex);
+    if (searchResult && searchResult.node.patterns) {
+      // より長い一致が見つかった場合、特殊文字の結果を上書き
+      if (!result || searchResult.length > result.length) {
         result = {
           pattern: searchResult.node.patterns,
           length: searchResult.length,

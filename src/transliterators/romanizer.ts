@@ -38,11 +38,11 @@ export class Romanizer extends AbstractTransliterator {
   ]);
 
   private static readonly HALF_WIDTH_SPECIAL_CHARS =
-    /[!@#$%^&*()_+\-=\[\]{}|;:'",.\/<>?]/;
+    /[!@#$%^&*()_+\-=\[\]{}|;:'",.\/<>?0-9]/;
   private static readonly FULL_WIDTH_SPECIAL_CHARS =
-    /[！＠＃＄％＾＆＊（）＿＋－＝［］｛｝｜；：'"、。・＜＞？]/;
+    /[！＠＃＄％＾＆＊（）＿＋－＝［］｛｝｜；：'"、。・＜＞？０-９]/;
   private static readonly PUNCTUATIONS =
-    /[、。，．・：；？！´｀¨＾￣＿―‐／＼～∥｜…‥''""（）〔〕［］｛｝〈〉《》「」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄￠￡％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓〓]/;
+    /[、。，．・：；？！´｀¨＾￣＿―‐／＼～∥｜…‥''""（）〔〕［］｛｝〈〉《》「」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄￠￡％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓〓ー]/;
 
   // パターンサービス
   private readonly patternService: PatternService;
@@ -207,7 +207,7 @@ export class Romanizer extends AbstractTransliterator {
     for (let i = 0; i < str.length; i++) {
       const char = str[i];
 
-      // 特殊文字判定（全角・半角の記号）
+      // 特殊文字判定（全角・半角の記号や数字）
       const isSpecialChar = this.isSpecialCharacter(char);
       if (isSpecialChar) {
         // パターン表からの変換を試みる
@@ -219,6 +219,69 @@ export class Romanizer extends AbstractTransliterator {
           // パターン表にない場合はそのまま使用
           result.push([char]);
         }
+        
+        // 特殊文字や数字の後に複合パターンがあるか検索
+        if (i + 1 < str.length) {
+          // まず特殊文字の後の複数文字を含む最長一致を試みる
+          let foundCompoundPattern = false;
+          
+          // 最大3文字まで試す
+          for (let len = 3; len > 0; len--) {
+            if (i + len <= str.length) {
+              const compound = str.substring(i + 1, i + len + 1);
+              const compoundMatch = this.patternService.search(compound);
+              
+              if (compoundMatch) {
+                // 特殊文字と後続パターンを組み合わせる
+                const specialPattern = match ? match[0] : char;
+                const combinedPattern = [`${specialPattern}${compoundMatch[0]}`];
+                
+                // 既に追加した特殊文字のパターンを削除
+                result.pop();
+                
+                // 結合したパターンを追加
+                result.push(combinedPattern);
+                
+                // インデックスを進める
+                i += len;
+                foundCompoundPattern = true;
+                break;
+              }
+            }
+          }
+          
+          if (foundCompoundPattern) {
+            continue;
+          }
+          
+          // 特殊文字の次の文字を含む最長一致パターンを検索
+          const nextCompoundMatch = this.patternService.findLongestMatch(
+            str, 
+            i + 1,
+            Romanizer.N_CHARS,
+            Romanizer.TSU_CHARS
+          );
+          
+          // 最長一致パターンが見つかった場合
+          if (nextCompoundMatch) {
+            // 特殊文字のパターンと最長一致パターンを結合
+            const specialPattern = match ? match[0] : char;
+            const nextPattern = nextCompoundMatch.pattern[0];
+            const combinedPattern = [`${specialPattern}${nextPattern}`];
+            
+            // 既に追加した特殊文字のパターンを削除
+            result.pop();
+            
+            // 結合したパターンを追加
+            result.push(combinedPattern);
+            
+            // インデックスを進める
+            i += nextCompoundMatch.length;
+            continue;
+          }
+        }
+        
+        // 複合パターンが見つからなかった場合は次の文字へ
         continue;
       }
 
