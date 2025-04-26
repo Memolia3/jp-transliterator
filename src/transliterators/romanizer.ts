@@ -44,14 +44,26 @@ export class Romanizer extends AbstractTransliterator {
   private static readonly PUNCTUATIONS =
     /[、。，．・：；？！´｀¨＾￣＿―‐／＼～∥｜…‥''""（）〔〕［］｛｝〈〉《》「」『』【】＋－±×÷＝≠＜＞≦≧∞∴♂♀°′″℃￥＄￠￡％＃＆＊＠§☆★○●◎◇◆□■△▲▽▼※〒→←↑↓〓ー]/;
 
-  // パターンサービス
+  // 共通で使用される特殊パターン
+  private static readonly TSU_PATTERNS = new Set([
+    "xtu",
+    "xtsu",
+    "ltu",
+    "ltsu",
+  ]);
+  private static readonly N_PATTERNS = new Set(["n", "nn"]);
+
+  // サービスインスタンス
   private readonly patternService: PatternService;
-  // カーテシアン積計算サービス
   private readonly cartesianService: CartesianService;
-  // テキスト変換サービス
   private readonly textConverterService: TextConverterService;
-  // 最大結果数
+
+  // 定数
   private readonly MAX_RESULT_SIZE = Number.MAX_SAFE_INTEGER;
+  private readonly MAX_COMBINATIONS = 20000;
+  private readonly SMALL_CHUNK_SIZE = 5;
+  private readonly LONG_TEXT_THRESHOLD = 20;
+  private readonly COMPLEX_PATTERNS_THRESHOLD = 100;
 
   constructor() {
     super();
@@ -75,23 +87,142 @@ export class Romanizer extends AbstractTransliterator {
     str: string,
     chunkSize: number
   ): Combinations | null {
-    // 入力文字列が空の場合
     if (!str) return null;
 
-    // 半角に変換
     const halfWidthStr = this.textConverterService.toHalfWidth(str);
 
-    // 特殊な記号のみの場合は直接変換
+    // 特殊文字の位置を収集
+    const specialCharPositions: number[] = [];
+    for (let i = 0; i < halfWidthStr.length; i++) {
+      if (this.isSpecialCharacter(halfWidthStr[i])) {
+        specialCharPositions.push(i);
+      }
+    }
+
+    // 特殊文字のみの場合は直接マッピング
     if (this.isOnlySpecialCharacters(halfWidthStr)) {
       const directMapping = this.createDirectMapping(halfWidthStr);
       return directMapping.length > 0 ? directMapping : null;
     }
 
-    // チャンクサイズの自動調整（長い入力の場合は小さなチャンクに分割）
-    const effectiveChunkSize =
-      str.length > 20 ? Math.min(chunkSize, 8) : chunkSize;
+    // 特殊文字がある場合は境界で分割
+    if (specialCharPositions.length > 0) {
+      return this.processWithSpecialChars(halfWidthStr, specialCharPositions);
+    }
 
-    // 長い入力はチャンクに分割
+    // 特殊文字がない場合は通常処理
+    return this.processNormalText(halfWidthStr, chunkSize);
+  }
+
+  /**
+   * 特殊文字を含む文字列の処理
+   */
+  private processWithSpecialChars(
+    halfWidthStr: string,
+    specialCharPositions: number[]
+  ): Combinations | null {
+    // セグメントに分割
+    const segments: string[] = [];
+    let startPos = 0;
+
+    for (const pos of specialCharPositions) {
+      if (pos > startPos) {
+        segments.push(halfWidthStr.substring(startPos, pos));
+      }
+      segments.push(halfWidthStr[pos]);
+      startPos = pos + 1;
+    }
+
+    if (startPos < halfWidthStr.length) {
+      segments.push(halfWidthStr.substring(startPos));
+    }
+
+    // 各セグメントを処理
+    const segmentResults: Combinations[] = [];
+
+    for (const segment of segments) {
+      // 特殊文字の単一セグメント
+      if (segment.length === 1 && this.isSpecialCharacter(segment)) {
+        const pattern = this.patternService.search(segment) || [segment];
+        segmentResults.push([[[pattern[0]], [pattern[0]]]]);
+        continue;
+      }
+
+      // 通常テキストセグメント
+      const patternArray = this.generatePatternArray(segment);
+      if (!patternArray.length) continue;
+
+      // 長いセグメントの分割処理
+      const combinations =
+        segment.length > 10 && patternArray.length > 10
+          ? this.processLongSegment(segment, patternArray)
+          : this.generateAllCombinations(patternArray, segment);
+
+      if (combinations.length === 0) {
+        const fallbackParts = patternArray.map((pat) => pat[0]);
+        segmentResults.push([[[fallbackParts.join("")], fallbackParts]]);
+      } else {
+        segmentResults.push(combinations);
+      }
+    }
+
+    // 結果の結合
+    return this.combineResults(segmentResults);
+  }
+
+  /**
+   * 長いセグメントの処理
+   */
+  private processLongSegment(
+    segment: string,
+    patternArray: Pattern
+  ): Combinations {
+    const subChunks = [];
+
+    for (let i = 0; i < patternArray.length; i += this.SMALL_CHUNK_SIZE) {
+      subChunks.push(patternArray.slice(i, i + this.SMALL_CHUNK_SIZE));
+    }
+
+    let chunkResults: Combinations = [];
+
+    for (let i = 0; i < subChunks.length; i++) {
+      const subChunk = subChunks[i];
+      const subOriginalStr = segment.substring(
+        i * this.SMALL_CHUNK_SIZE,
+        Math.min((i + 1) * this.SMALL_CHUNK_SIZE, segment.length)
+      );
+
+      const combinations = this.generateAllCombinations(
+        subChunk,
+        subOriginalStr
+      );
+
+      if (i === 0) {
+        chunkResults = combinations;
+      } else {
+        chunkResults = this.cartesianService.combineCartesian(
+          chunkResults,
+          combinations,
+          this.MAX_RESULT_SIZE
+        );
+      }
+    }
+
+    return chunkResults;
+  }
+
+  /**
+   * 特殊文字のない通常テキストの処理
+   */
+  private processNormalText(
+    halfWidthStr: string,
+    chunkSize: number
+  ): Combinations | null {
+    const effectiveChunkSize =
+      halfWidthStr.length > this.LONG_TEXT_THRESHOLD
+        ? Math.min(chunkSize, 8)
+        : chunkSize;
+
     const chunks = this.textProcessor.splitIntoChunks(
       halfWidthStr,
       effectiveChunkSize
@@ -102,30 +233,31 @@ export class Romanizer extends AbstractTransliterator {
       const patternArray = this.generatePatternArray(chunk);
       if (!patternArray.length) continue;
 
-      // パターン数に関わらず同一のロジックで処理
       const combinations = this.generateAllCombinations(patternArray, chunk);
+
       if (combinations.length === 0) {
-        // フォールバック: 各パターンの先頭候補を使用
         const fallbackParts = patternArray.map((pat) => pat[0]);
-        const fallbackRomaji = fallbackParts.join("");
-        chunkResults.push([[[fallbackRomaji], fallbackParts]]);
+        chunkResults.push([[[fallbackParts.join("")], fallbackParts]]);
       } else {
         chunkResults.push(combinations);
       }
     }
 
-    // 結果が空の場合
-    if (chunkResults.length === 0) return null;
+    return this.combineResults(chunkResults);
+  }
 
-    // 単一チャンクの場合はそのまま返す
-    if (chunkResults.length === 1) return chunkResults[0];
+  /**
+   * 結果を結合する共通メソッド
+   */
+  private combineResults(results: Combinations[]): Combinations | null {
+    if (results.length === 0) return null;
+    if (results.length === 1) return results[0];
 
-    // 複数チャンクの場合はカーテシアン積で結合（結果数制限を撤廃）
-    let finalResults = chunkResults[0];
-    for (let i = 1; i < chunkResults.length; i++) {
+    let finalResults = results[0];
+    for (let i = 1; i < results.length; i++) {
       finalResults = this.cartesianService.combineCartesian(
         finalResults,
-        chunkResults[i],
+        results[i],
         this.MAX_RESULT_SIZE
       );
     }
@@ -137,13 +269,11 @@ export class Romanizer extends AbstractTransliterator {
    * 文字列が特殊文字のみで構成されているかチェック
    */
   private isOnlySpecialCharacters(str: string): boolean {
-    // 文字ごとにチェック
     for (const char of str) {
       if (!this.isSpecialCharacter(char)) {
         return false;
       }
     }
-
     return true;
   }
 
@@ -151,55 +281,18 @@ export class Romanizer extends AbstractTransliterator {
    * 特殊文字のための直接マッピングを作成
    */
   private createDirectMapping(str: string): Combinations {
-    const result: Combinations = [];
     const parts: string[] = [];
 
-    // 各文字を分割して配列に
     for (const char of str) {
-      // パターン表からの変換を試みる
       const patterns = this.patternService.search(char);
-      if (patterns) {
-        // パターン表に定義されている場合はそれを使用
-        parts.push(patterns[0]);
-      } else {
-        // パターン表にない場合はそのまま使用
-        parts.push(char);
-      }
+      parts.push(patterns ? patterns[0] : char);
     }
 
-    // 特殊文字を直接マッピング
-    const combinedStr = parts.join("");
-    result.push([[combinedStr], parts]);
-
-    return result;
-  }
-
-  /**
-   * パターンを単純化する追加メソッド
-   */
-  private simplifyPatterns(patterns: Pattern): Pattern {
-    // パターン数が多すぎる場合に最適化
-    if (patterns.length > 20) {
-      return patterns.map((options) => {
-        // 1つしかない場合はそのまま
-        if (options.length <= 1) return options;
-        // 長さが2以下なら2つまで
-        if (options.length <= 2) return options;
-        // それ以外は最も一般的なオプションのみ
-        return [options[0]];
-      });
-    }
-
-    return patterns.map((options) => {
-      if (options.length <= 2) return options;
-      // 最も一般的な2つのオプションに制限
-      return options.slice(0, 2);
-    });
+    return [[[parts.join("")], parts]];
   }
 
   /**
    * パターン配列生成メソッド
-   * 入力文字列から変換パターンの配列を生成
    */
   protected generatePatternArray(str: string): Pattern {
     const result: Pattern = [];
@@ -207,45 +300,35 @@ export class Romanizer extends AbstractTransliterator {
     for (let i = 0; i < str.length; i++) {
       const char = str[i];
 
-      // 特殊文字判定（全角・半角の記号や数字）
-      const isSpecialChar = this.isSpecialCharacter(char);
-      if (isSpecialChar) {
-        // パターン表からの変換を試みる
+      // 特殊文字判定
+      if (this.isSpecialCharacter(char)) {
         const match = this.patternService.search(char);
-        if (match) {
-          // パターン表に定義されている場合はそれを使用
-          result.push(match);
-        } else {
-          // パターン表にない場合はそのまま使用
-          result.push([char]);
-        }
-        
-        // 特殊文字は常に独立した1文字として扱い、後続の文字との結合処理はしない
+        result.push(match || [char]);
         continue;
       }
 
-      // 特殊パターン「ん」（N）の処理
+      // 特殊パターン「ん」の処理
       if (this.handleSpecialN(str, i, result)) {
         continue;
       }
 
-      // 特殊パターン「っ」（促音）の処理
+      // 特殊パターン「っ」の処理
       if (this.handleTsu(str, i, result)) {
         continue;
       }
 
-      // 通常パターンの処理（最長一致で検索）
+      // 通常パターン（最長一致）
       const match = this.patternService.findLongestMatch(
         str,
         i,
         Romanizer.N_CHARS,
         Romanizer.TSU_CHARS
       );
+
       if (match) {
         result.push(match.pattern);
         i += match.length - 1;
       } else {
-        // 一致するパターンがない場合はそのまま追加
         result.push([char]);
       }
     }
@@ -254,11 +337,11 @@ export class Romanizer extends AbstractTransliterator {
   }
 
   /**
-   * 特殊文字かどうかをチェック（単一文字用）
+   * 特殊文字チェック
    */
   private isSpecialCharacter(char: string): boolean {
     if (!char) return false;
-    // 単文字の場合
+
     if (char.length === 1) {
       return (
         Romanizer.HALF_WIDTH_SPECIAL_CHARS.test(char) ||
@@ -266,7 +349,7 @@ export class Romanizer extends AbstractTransliterator {
         Romanizer.PUNCTUATIONS.test(char)
       );
     }
-    // 複数文字（例：パターン）の場合は最初の文字をチェック
+
     return this.isSpecialCharacter(char[0]);
   }
 
@@ -277,17 +360,15 @@ export class Romanizer extends AbstractTransliterator {
     const char = str[i];
     if (!Romanizer.N_CHARS.has(char)) return false;
 
-    // 「ん」の後の文字によって変換を変える
     const nPossiblePatterns = this.patternService.getSpecialPatterns(char);
     if (!nPossiblePatterns) return false;
 
-    // 「ん」の後がナ行の場合
-    if (i + 1 < str.length && Romanizer.NA_LINE_CHARS.has(str[i + 1])) {
-      // 'nn'のみを使用
-      patterns.push(["nn"]);
-    } else {
-      patterns.push(nPossiblePatterns);
-    }
+    // 「ん」の後がナ行の場合は 'nn' のみ使用
+    patterns.push(
+      i + 1 < str.length && Romanizer.NA_LINE_CHARS.has(str[i + 1])
+        ? ["nn"]
+        : nPossiblePatterns
+    );
 
     return true;
   }
@@ -299,7 +380,6 @@ export class Romanizer extends AbstractTransliterator {
     const char = str[i];
     if (!Romanizer.TSU_CHARS.has(char)) return false;
 
-    // パターン表から「っ|ッ」の全パターンを取得
     const tsuPossiblePatterns = this.patternService.getSpecialPatterns(char);
     if (!tsuPossiblePatterns) return false;
 
@@ -312,62 +392,17 @@ export class Romanizer extends AbstractTransliterator {
         Romanizer.TSU_CHARS
       );
 
-      if (
-        nextMatch &&
-        nextMatch.pattern[0][0] &&
-        /^[a-z]/.test(nextMatch.pattern[0][0])
-      ) {
-        // 促音の後の文字の先頭子音を重ねる
+      if (nextMatch?.pattern[0][0] && /^[a-z]/.test(nextMatch.pattern[0][0])) {
         const firstConsonant =
           nextMatch.pattern[0][0].match(/^[^aiueo]*/)?.[0] || "";
         if (firstConsonant) {
-          // 子音の重ね書き（例：pp, tt）と「っ|ッ」のすべてのパターン（xtu, xtsu, ltu, ltsu）の両方を追加
-          const allPatterns = [firstConsonant, ...tsuPossiblePatterns];
-          patterns.push(allPatterns);
+          patterns.push([firstConsonant, ...tsuPossiblePatterns]);
           return true;
         }
       }
     }
 
-    // デフォルトの変換を使用
     patterns.push(tsuPossiblePatterns);
-    return true;
-  }
-
-  /**
-   * 子音の組み合わせが有効かどうかをチェック
-   */
-  private isValidConsonantCombination(parts: string[]): boolean {
-    // 連続する子音をチェック
-    for (let i = 0; i < parts.length - 1; i++) {
-      const current = parts[i];
-      const next = parts[i + 1];
-
-      // 特殊文字/記号の場合は常に許可
-      if (this.isSpecialCharacter(current)) {
-        continue;
-      }
-
-      // 子音のみで母音が続かない場合
-      if (
-        current.length === 1 &&
-        !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(current) &&
-        !next.startsWith(current)
-      ) {
-        return false;
-      }
-    }
-
-    // 末尾が子音のみで終わる場合（特殊文字/記号は除く）
-    const last = parts[parts.length - 1];
-    if (
-      last.length === 1 &&
-      !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(last) &&
-      !this.isSpecialCharacter(last)
-    ) {
-      return false;
-    }
-
     return true;
   }
 
@@ -380,138 +415,274 @@ export class Romanizer extends AbstractTransliterator {
   ): Combinations {
     if (!patterns.length) return [];
 
+    // 1-2パターンの高速処理
+    if (patterns.length <= 2) {
+      return this.generateSimpleCombinations(patterns);
+    }
+
+    // パターン数のチェックと制限
+    const MAX_SAFE_PATTERN_LENGTH = 12;
+    if (patterns.length > MAX_SAFE_PATTERN_LENGTH) {
+      // 長いパターンは分割して処理
+      const firstHalf = patterns.slice(0, MAX_SAFE_PATTERN_LENGTH);
+      const firstResults = this.generateAllCombinations(firstHalf, originalStr?.substring(0, MAX_SAFE_PATTERN_LENGTH));
+      
+      // 残りのパターンは直接マッピング（メモリ節約のため）
+      const remainingParts = patterns.slice(MAX_SAFE_PATTERN_LENGTH).map(p => p[0]);
+      const remainingText = remainingParts.join('');
+      
+      // 結果を結合（制限付き）
+      const combinedResults: Combinations = [];
+      const maxResultsToProcess = Math.min(firstResults.length, 100);
+      
+      for (let i = 0; i < maxResultsToProcess; i++) {
+        const [texts, parts] = firstResults[i];
+        const newTexts = texts.map(t => t + remainingText);
+        const newParts = [...parts, ...remainingParts];
+        combinedResults.push([newTexts, newParts]);
+        
+        if (combinedResults.length >= 100) break;
+      }
+      
+      return combinedResults.length > 0 ? combinedResults : [[
+        [patterns.map(p => p[0]).join('')], 
+        patterns.map(p => p[0])
+      ]];
+    }
+
+    // 各パターンの最大選択肢数を制限
+    const simplifiedPatterns: Pattern = [];
+    for (const pattern of patterns) {
+      if (pattern.length <= 2) {
+        simplifiedPatterns.push(pattern);
+      } else {
+        // 選択肢が多すぎる場合は最初の2つだけ使用
+        simplifiedPatterns.push(pattern.slice(0, 2));
+      }
+    }
+
+    // 組み合わせの総数を推定
+    let estimatedCombinations = 1;
+    for (const pattern of simplifiedPatterns) {
+      estimatedCombinations *= pattern.length;
+      // 早期チェック: 組み合わせが多すぎる場合
+      if (estimatedCombinations > this.MAX_COMBINATIONS * 5) {
+        return this.generateSimplifiedCombinations(patterns);
+      }
+    }
+
     const results: Combinations = [];
-    // バッチサイズ
-    const MAX_BATCH_SIZE = Number.MAX_SAFE_INTEGER;
+    const current = new Array(patterns.length);
+    const parts = new Array(patterns.length);
 
-    // メモリ効率を上げるため、途中結果をオブジェクトプールとして再利用
-    let currentBatch: { current: string[]; parts: string[]; index: number }[] =
-      [{ current: [], parts: [], index: 0 }];
-    let nextBatch: typeof currentBatch = [];
-
-    // 特殊文字判定のセット - 頻繁にアクセスする値をキャッシュ
-    const tsuPatterns = new Set(["xtu", "xtsu", "ltu", "ltsu"]);
-    const consonantChars = Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS;
-
-    // 「ん」のパターン用のセット
-    const nChars = new Set(["n", "nn"]);
-
-    // originalStrが与えられている場合、特殊文字の事前判定を行い、配列としてキャッシュ
-    const specialCharCache: boolean[] = [];
+    // 特殊文字の事前チェック - 特殊文字の位置を記録
+    const specialCharIndices = new Set<number>();
     if (originalStr) {
-      for (let i = 0; i < originalStr.length; i++) {
-        specialCharCache[i] = this.isSpecialCharacter(originalStr[i]);
+      const len = Math.min(originalStr.length, patterns.length);
+      for (let i = 0; i < len; i++) {
+        if (this.isSpecialCharacter(originalStr[i])) {
+          specialCharIndices.add(i);
+        }
       }
     }
 
-    // 処理できる最大の組み合わせ数を計算
-    // パターンごとの平均選択肢数を推定
-    let avgOptionsPerPattern =
-      patterns.reduce((sum, options) => sum + options.length, 0) /
-      patterns.length;
+    // インデックスの配列 - 各パターンの現在の選択肢を追跡
+    const indices = new Int16Array(patterns.length).fill(0);
+    let position = 0;
+    let validCombinationsCount = 0;
+    let totalIterations = 0;
+    const MAX_ITERATIONS = 1000000; // 安全対策
 
-    // 組み合わせ数の予測（指数関数的に増加）
-    const estimatedCombinations = Math.pow(
-      avgOptionsPerPattern,
-      patterns.length
-    );
-
-    // 簡略化モードは使用しない
-    const simplifiedMode = false;
-
-    while (currentBatch.length > 0) {
-      nextBatch.length = 0; // 配列を再利用
-
-      // バッチサイズによるサンプリングは行わない
-
-      for (let batchIdx = 0; batchIdx < currentBatch.length; batchIdx++) {
-        const { current, parts, index } = currentBatch[batchIdx];
-
-        if (index === patterns.length) {
-          if (this.isValidConsonantCombination(parts)) {
-            results.push([[current.join("")], parts.slice()]); // 配列のコピーを追加
-          }
-          continue;
+    // 反復処理による組み合わせ生成（スタックレス実装）
+    mainLoop: while (position < patterns.length && totalIterations < MAX_ITERATIONS) {
+      totalIterations++;
+      
+      // 現在のパターンインデックスと選択肢
+      const patternIndex = position;
+      const optionIndex = indices[patternIndex];
+      
+      // パターンの範囲チェック
+      if (patternIndex >= patterns.length) {
+        break;
+      }
+      
+      // 選択肢の範囲チェック
+      if (optionIndex >= simplifiedPatterns[patternIndex].length) {
+        // このパターンのすべての選択肢を試した場合、前のパターンに戻る
+        indices[patternIndex] = 0;
+        position--;
+        
+        // すべてのパターンを試し終わった場合は終了
+        if (position < 0) {
+          break;
         }
-
-        const pattern = patterns[index];
-
-        // 簡略化モードでは各パターンの最初の選択肢のみ使用
-        const patternOptions = simplifiedMode ? [pattern[0]] : pattern;
-
-        // 特殊文字判定（キャッシュから取得）
-        const isCurrentSpecial = specialCharCache[index] || false;
-        const isLastSpecial =
-          index > 0 ? specialCharCache[index - 1] || false : false;
-
-        for (let patIdx = 0; patIdx < patternOptions.length; patIdx++) {
-          const char = patternOptions[patIdx];
-
-          if (nextBatch.length < MAX_BATCH_SIZE) {
-            // 子音の連続チェック - 高速化のため条件判定を最適化
-            let isValid = true;
-
-            if (parts.length > 0) {
-              const lastPart = parts[parts.length - 1];
-
-              // 促音パターンチェック - Setを使用して高速化
-              const isTsuPattern = tsuPatterns.has(char);
-
-              // 「ん」パターンチェック
-              const isNChar = nChars.has(char) || nChars.has(lastPart);
-
-              // 単一子音の連続チェック - 特殊文字の場合はスキップ
-              if (
-                !isLastSpecial && // 前が記号でない場合
-                !isCurrentSpecial && // 現在も記号でない場合
-                !isNChar && // 「ん」でない場合
-                lastPart.length === 1 &&
-                !consonantChars.has(lastPart) &&
-                !char.startsWith(lastPart) &&
-                !isTsuPattern
-              ) {
-                // 子音の重ね書きの特別処理
-                if (!(lastPart.length === 1 && char.startsWith(lastPart))) {
-                  isValid = false; // その他の無効な子音の組み合わせ
-                }
-              }
-            }
-
-            if (isValid) {
-              nextBatch.push({
-                current: [...current, char],
-                parts: [...parts, char],
-                index: index + 1,
-              });
-            }
+        
+        // 前のパターンの次の選択肢へ
+        indices[position]++;
+        continue;
+      }
+      
+      // 現在の選択肢を設定
+      const currentOption = simplifiedPatterns[patternIndex][optionIndex];
+      current[patternIndex] = currentOption;
+      parts[patternIndex] = currentOption;
+      
+      // 子音連続の検証（最初のパターン以外）
+      let isValid = true;
+      if (patternIndex > 0) {
+        const prevPattern = patternIndex - 1;
+        const prevOption = parts[prevPattern];
+        
+        // 特殊文字の場合は常に有効
+        const isPrevSpecial = specialCharIndices.has(prevPattern);
+        const isCurrentSpecial = specialCharIndices.has(patternIndex);
+        
+        if (!isPrevSpecial && !isCurrentSpecial) {
+          // 「ん」パターン
+          const isNPattern = Romanizer.N_PATTERNS.has(prevOption) || 
+                            Romanizer.N_PATTERNS.has(currentOption);
+          
+          // 促音パターン
+          const isTsuPattern = Romanizer.TSU_PATTERNS.has(currentOption);
+          
+          // 子音連続ルール
+          if (!isNPattern && !isTsuPattern &&
+              prevOption.length === 1 && 
+              !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(prevOption) && 
+              !currentOption.startsWith(prevOption)) {
+            isValid = false;
           }
         }
       }
-
-      // バッチの入れ替え
-      const temp = currentBatch;
-      temp.length = 0;
-
-      // すべての結果を保持
-      for (let i = 0; i < nextBatch.length; i++) {
-        temp.push({
-          current: [...nextBatch[i].current],
-          parts: [...nextBatch[i].parts],
-          index: nextBatch[i].index,
-        });
+      
+      if (!isValid) {
+        // 無効な組み合わせの場合、次の選択肢を試す
+        indices[patternIndex]++;
+        continue;
       }
-
-      // バッチの入れ替え
-      currentBatch = temp;
-      nextBatch = [];
+      
+      // 最後のパターンまで到達した場合、組み合わせを保存
+      if (patternIndex === patterns.length - 1) {
+        validCombinationsCount++;
+        
+        // 組み合わせ文字列を生成
+        const combinedText = current.join('');
+        
+        // メモリ効率のため浅いコピーを使用
+        results.push([[combinedText], [...parts]]);
+        
+        // 十分な結果を得た場合は終了
+        if (results.length >= this.MAX_COMBINATIONS) {
+          break mainLoop;
+        }
+        
+        // 最後のパターンの次の選択肢へ
+        indices[patternIndex]++;
+      } else {
+        // 次のパターンへ進む
+        position++;
+      }
     }
+    
+    // 結果がない場合はフォールバック
+    if (results.length === 0) {
+      const fallbackParts = patterns.map(p => p[0]);
+      results.push([[fallbackParts.join('')], fallbackParts]);
+    }
+    
+    return results;
+  }
 
-    // 結果が空の場合はフォールバック（最初のパターンの組み合わせ）
-    if (results.length === 0 && patterns.length > 0) {
-      const fallbackParts = patterns.map((p) => p[0]);
-      results.push([[fallbackParts.join("")], fallbackParts]);
+  /**
+   * 簡易版の組み合わせ生成 - メモリ効率優先
+   */
+  private generateSimplifiedCombinations(patterns: Pattern): Combinations {
+    // 各パターンの最初の選択肢のみを使用
+    const firstOptions = patterns.map(p => p[0]);
+    const combined = firstOptions.join('');
+    
+    // ヒューリスティクスでいくつかの代表的な組み合わせのみを生成
+    const results: Combinations = [[[combined], firstOptions]];
+    
+    // パターン数が少ない場合は代替選択肢も試す
+    if (patterns.length <= 8) {
+      // いくつかのパターンで2番目の選択肢を試す
+      for (let i = 0; i < Math.min(4, patterns.length); i++) {
+        if (patterns[i].length > 1) {
+          const altOptions = [...firstOptions];
+          altOptions[i] = patterns[i][1];
+          results.push([[altOptions.join('')], altOptions]);
+          
+          // 結果数が上限に達したら終了
+          if (results.length >= 10) break;
+        }
+      }
+    }
+    
+    return results;
+  }
+
+  /**
+   * 単純なケース（1-2パターン）の組み合わせ生成
+   */
+  private generateSimpleCombinations(patterns: Pattern): Combinations {
+    const results: Combinations = [];
+
+    if (patterns.length === 1) {
+      // 単一パターン
+      for (const option of patterns[0]) {
+        results.push([[option], [option]]);
+      }
+    } else if (patterns.length === 2) {
+      // 2パターン
+      for (const first of patterns[0]) {
+        for (const second of patterns[1]) {
+          if (this.isValidSimpleConsonantCombination(first, second)) {
+            results.push([[first + second], [first, second]]);
+          }
+        }
+      }
     }
 
     return results;
+  }
+
+  /**
+   * 単純な子音組み合わせ検証（2パターン用）
+   */
+  private isValidSimpleConsonantCombination(
+    first: string,
+    second: string
+  ): boolean {
+    // 特殊文字は常に許可
+    if (this.isSpecialCharacter(first) || this.isSpecialCharacter(second)) {
+      return true;
+    }
+
+    // 「ん」パターン
+    if (Romanizer.N_PATTERNS.has(first)) {
+      return true;
+    }
+
+    // 促音パターン
+    if (
+      second.startsWith("xtu") ||
+      second.startsWith("xtsu") ||
+      second.startsWith("ltu") ||
+      second.startsWith("ltsu")
+    ) {
+      return true;
+    }
+
+    // 子音のみで母音が続かない無効ケース
+    if (
+      first.length === 1 &&
+      !Romanizer.CONSONANT_CHECK_THROUGH_ROMAN_CHARS.has(first) &&
+      !second.startsWith(first)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 }
