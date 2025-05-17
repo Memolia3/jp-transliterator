@@ -81,7 +81,7 @@ export class CartesianService {
    */
   public calculatePatternProduct(
     patterns: string[][],
-    maxResults = 10000
+    maxResults = Number.MAX_SAFE_INTEGER
   ): string[] {
     if (patterns.length === 0) return [];
     if (patterns.length === 1) return patterns[0];
@@ -94,18 +94,20 @@ export class CartesianService {
       const nextPattern = patterns[i];
       const combinedResults: string[] = [];
 
-      // 制限付きの結合
-      for (
-        let j = 0;
-        j < currentResults.length && combinedResults.length < maxResults;
-        j++
-      ) {
-        for (
-          let k = 0;
-          k < nextPattern.length && combinedResults.length < maxResults;
-          k++
-        ) {
+      // 制限なしの結合
+      for (let j = 0; j < currentResults.length; j++) {
+        for (let k = 0; k < nextPattern.length; k++) {
           combinedResults.push(currentResults[j] + nextPattern[k]);
+          
+          // 最大結果数を超えないように
+          if (combinedResults.length >= maxResults) {
+            break;
+          }
+        }
+        
+        // 最大結果数を超えないように
+        if (combinedResults.length >= maxResults) {
+          break;
         }
       }
 
@@ -114,7 +116,6 @@ export class CartesianService {
       // 結果サイズが制限を超えた場合
       if (currentResults.length >= maxResults) {
         currentResults = currentResults.slice(0, maxResults);
-        break;
       }
     }
 

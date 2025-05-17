@@ -60,7 +60,6 @@ export class TextProcessor {
           continue;
         }
         
-        // 適切な分割位置が見つかった
         break;
       }
       

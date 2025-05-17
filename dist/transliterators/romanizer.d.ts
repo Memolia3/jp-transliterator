@@ -17,10 +17,8 @@ export declare class Romanizer extends AbstractTransliterator {
     private readonly cartesianService;
     private readonly textConverterService;
     private readonly MAX_RESULT_SIZE;
-    private readonly MAX_COMBINATIONS;
     private readonly SMALL_CHUNK_SIZE;
     private readonly LONG_TEXT_THRESHOLD;
-    private readonly COMPLEX_PATTERNS_THRESHOLD;
     constructor();
     /**
      * 実際の変換プロセスを実装
@@ -70,10 +68,6 @@ export declare class Romanizer extends AbstractTransliterator {
      * すべての組み合わせを生成
      */
     protected generateAllCombinations(patterns: Pattern, originalStr?: string): Combinations;
-    /**
-     * 簡易版の組み合わせ生成 - メモリ効率優先
-     */
-    private generateSimplifiedCombinations;
     /**
      * 単純なケース（1-2パターン）の組み合わせ生成
      */

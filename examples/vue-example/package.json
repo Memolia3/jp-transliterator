@@ -10,7 +10,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://[your-username].github.io/jp-transliterator/",
+  "homepage": "https://memolia3.github.io/jp-transliterator/",
   "dependencies": {
     "jp-transliterator": "^2.0.3",
     "scss": "^0.2.4",
